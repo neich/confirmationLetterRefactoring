@@ -66,6 +66,11 @@ public class ConfirmationLetterGenerator {
     ConfirmationLetter letter = new ConfirmationLetter();
     letter.setCurrency(records.get(0).getCurrency());
     letter.setExtension(extension);
+    letter.setTotalRetrievedRecords(fileUploadCommand.getTotalRecords());
+    letter.setCreditingErrors(faultyRecords);
+    letter.setClient(client);
+    letter.setBranchName(branchName);
+    letter.setBanks(bankMap);
 
     letter.setHashTotalCredit(hashBatchRecordsBalance.getHashTotalCredit()
         .toString());
@@ -85,13 +90,8 @@ public class ConfirmationLetterGenerator {
     } else
       letter.setTransactionCost("");
     letter.setTransferType(hashBatchRecordsBalance.getCollectionType());
-    // // logger.debug("letter method, bankMap: "+bankMap.size());
-    letter.setBanks(bankMap);
 
     // uncommented this line
-    letter.setCreditingErrors(faultyRecords);
-    letter.setClient(client);
-    letter.setBranchName(branchName);
     Map<String, BigDecimal> retrievedAmounts = new HashMap<String, BigDecimal>();
     retrievedAmounts = calculateRetrieveAmounts(records, faultyRecords,
         client, extension, faultyAccountNumberRecordList,
@@ -102,11 +102,6 @@ public class ConfirmationLetterGenerator {
         .get(Constants.CURRENCY_FL));
     letter.setRetrievedAmountUsd(retrievedAmounts
         .get(Constants.CURRENCY_FL));
-//		System.out.println("TRACING AMOUNT ["+letter.getRetrievedAmountFL()+"]");
-    // letter.setRetrievedAmountFLDBF(retrievedAmounts.get("FLDBF"));
-    // letter.setRetrievedAmountUSDDBF(retrievedAmounts.get("USDDBF"));
-    // letter.setRetrievedAmountEURDBF(retrievedAmounts.get("EURDBF"));
-    letter.setTotalRetrievedRecords(fileUploadCommand.getTotalRecords());
     return letter;
   }
 
