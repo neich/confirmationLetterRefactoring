@@ -19,7 +19,6 @@ import java.util.*;
 public class ConfirmationLetterGenerator {
 
   private static Log logger = LogFactory.getLog(ConfirmationLetterGenerator.class);
-  private static final String COLLECTIVE = "collectief";
 
   private String crediting;
   private String debiting;
