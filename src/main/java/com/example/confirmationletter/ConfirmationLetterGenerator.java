@@ -499,27 +499,25 @@ public class ConfirmationLetterGenerator {
 
   private BigDecimal creditBatchTotal(Map<Integer, BatchTotal> batchTotals,
                                       Integer divider) {
-    Double sum = new Double(0);
+    BigDecimal sum = BigDecimal.ZERO;
     Iterator<BatchTotal> itr = batchTotals.values().iterator();
     while (itr.hasNext()) {
       BatchTotal total = itr.next();
 
-      sum = sum + total.getCreditValue().doubleValue();
+      sum = sum.add(total.getCreditValue());
     }
-    Double d = sum / new Double(divider);
-    return new BigDecimal(d);
+    return sum.divide(new BigDecimal(divider));
   }
 
   private BigDecimal debitBatchTotal(Map<Integer, BatchTotal> batchTotals,
                                      Integer divider) {
-    Double sum = new Double(0);
+    BigDecimal sum = BigDecimal.ZERO;
     Iterator<BatchTotal> itr = batchTotals.values().iterator();
     while (itr.hasNext()) {
       BatchTotal total = itr.next();
-      sum = sum + total.getCreditCounterValueForDebit().doubleValue();
+      sum = sum.add(total.getCreditCounterValueForDebit());
     }
-    Double d = sum / new Double(divider);
-    return new BigDecimal(d);
+    return sum.divide(new BigDecimal(divider));
   }
 
   private List<AmountAndRecordsPerBank> amountAndRecords(
