@@ -1,5 +1,7 @@
 package com.example.confirmationletter.record.command;
 
+import com.example.confirmationletter.record.service.impl.Constants;
+
 public class FileUploadCommand {
   private String fee;
   private Object totalRecords;
@@ -18,5 +20,9 @@ public class FileUploadCommand {
 
   public void setTotalRecords(Object totalRecords) {
     this.totalRecords = totalRecords;
+  }
+
+  public boolean hasFee() {
+    return fee.equalsIgnoreCase(Constants.YES);
   }
 }

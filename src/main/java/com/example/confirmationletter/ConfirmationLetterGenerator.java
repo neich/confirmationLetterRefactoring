@@ -84,11 +84,12 @@ public class ConfirmationLetterGenerator {
 
     letter.setTotalProcessedRecords(hashBatchRecordsBalance
         .getRecordsTotal().toString());
-    if (fileUploadCommand.getFee().equalsIgnoreCase(Constants.YES)) {
-      letter.setTransactionCost(hashBatchRecordsBalance.getTotalFee()
-          .toString());
-    } else
-      letter.setTransactionCost("");
+
+    String transactionCost = "";
+    if (fileUploadCommand.hasFee()) {
+      transactionCost = hashBatchRecordsBalance.getTotalFee().toString();
+    }
+    letter.setTransactionCost(transactionCost);
     letter.setTransferType(hashBatchRecordsBalance.getCollectionType());
 
     // uncommented this line
