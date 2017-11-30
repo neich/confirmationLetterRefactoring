@@ -46,6 +46,23 @@ public class ConfirmationLetterGenerator {
                                             List<TempRecord> sansDuplicateFaultRecordsList
   ) {
 
+    ConfirmationLetter letter = createConfirmationLetter(fileUploadCommand, client, hashBatchRecordsBalance, branchName, bankMap, faultyRecords, extension, records, faultyAccountNumberRecordList, sansDuplicateFaultRecordsList);
+
+    OurOwnByteArrayOutputStream arrayOutputStream = generateConfirmationLetterAsPDF(client, letter);
+
+    context.getConversationScope().asMap().put("dsbByteArrayOutputStream",
+        arrayOutputStream);
+
+    return arrayOutputStream;
+  }
+
+  private OurOwnByteArrayOutputStream generateConfirmationLetterAsPDF(Client client, ConfirmationLetter letter) {
+    return letterSelector
+          .generateLetter(client.getCreditDebit(), letter);
+  }
+
+  private ConfirmationLetter createConfirmationLetter(FileUploadCommand fileUploadCommand, Client client, HashBatchRecordsBalance hashBatchRecordsBalance, String branchName, List<AmountAndRecordsPerBank> bankMap, List<FaultRecord> faultyRecords, FileExtension extension, List<Record> records, List<TempRecord> faultyAccountNumberRecordList, List<TempRecord> sansDuplicateFaultRecordsList) {
+
     ConfirmationLetter letter = new ConfirmationLetter();
     letter.setCurrency(records.get(0).getCurrency());
     letter.setExtension(extension);
@@ -90,13 +107,7 @@ public class ConfirmationLetterGenerator {
     // letter.setRetrievedAmountUSDDBF(retrievedAmounts.get("USDDBF"));
     // letter.setRetrievedAmountEURDBF(retrievedAmounts.get("EURDBF"));
     letter.setTotalRetrievedRecords(fileUploadCommand.getTotalRecords());
-    OurOwnByteArrayOutputStream arrayOutputStream = letterSelector
-        .generateLetter(client.getCreditDebit(), letter);
-
-    context.getConversationScope().asMap().put("dsbByteArrayOutputStream",
-        arrayOutputStream);
-
-    return arrayOutputStream;
+    return letter;
   }
 
   // Calculate sum amount from faultyAccountnumber list
@@ -269,9 +280,9 @@ public class ConfirmationLetterGenerator {
     else {
 
       for (Record record : records) {
-        logger.debug("COUNTERTRANSFER ["+record.getIsCounterTransferRecord()+"] FEERECORD ["+record.getFeeRecord()+"]");
-        if (record.getIsCounterTransferRecord().compareTo(new Integer(0))==0
-            && record.getFeeRecord().compareTo(new Integer(0))==0) {
+        logger.debug("COUNTERTRANSFER [" + record.getIsCounterTransferRecord() + "] FEERECORD [" + record.getFeeRecord() + "]");
+        if (record.getIsCounterTransferRecord().compareTo(new Integer(0)) == 0
+            && record.getFeeRecord().compareTo(new Integer(0)) == 0) {
           if ((record.getCurrency().getCode().equals(
               Constants.FL_CURRENCY_CODE) || record
               .getCurrency().getCode().equals(
@@ -638,7 +649,7 @@ public class ConfirmationLetterGenerator {
   }
 
 	/*
-	 *
+   *
 	 * Getters and setters
 	 */
 
