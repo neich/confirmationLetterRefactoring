@@ -85,11 +85,8 @@ public class ConfirmationLetterGenerator {
     letter.setTotalProcessedRecords(hashBatchRecordsBalance
         .getRecordsTotal().toString());
 
-    String transactionCost = "";
-    if (fileUploadCommand.hasFee()) {
-      transactionCost = hashBatchRecordsBalance.getTotalFee().toString();
-    }
-    letter.setTransactionCost(transactionCost);
+    letter.setTransactionCost(getTransactionCost(fileUploadCommand, hashBatchRecordsBalance));
+
     letter.setTransferType(hashBatchRecordsBalance.getCollectionType());
 
     // uncommented this line
@@ -104,6 +101,14 @@ public class ConfirmationLetterGenerator {
     letter.setRetrievedAmountUsd(retrievedAmounts
         .get(Constants.CURRENCY_FL));
     return letter;
+  }
+
+  private String getTransactionCost(FileUploadCommand fileUploadCommand, HashBatchRecordsBalance hashBatchRecordsBalance) {
+    String transactionCost = "";
+    if (fileUploadCommand.hasFee()) {
+      transactionCost = hashBatchRecordsBalance.getTotalFee().toString();
+    }
+    return transactionCost;
   }
 
   // Calculate sum amount from faultyAccountnumber list
