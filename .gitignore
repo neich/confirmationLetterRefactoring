@@ -1,0 +1,11 @@
+.idea
+*.iml
+coverage-report
+lib
+out
+doc
+target
+.classpath
+.project
+.settings
+bin
