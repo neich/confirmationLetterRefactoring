@@ -44,10 +44,6 @@ public class ConfirmationLetterGenerator {
                                             FileExtension extension, List<Record> records,
                                             List<TempRecord> faultyAccountNumberRecordList,
                                             List<TempRecord> sansDuplicateFaultRecordsList
-                                            // ,
-                                            // List<BigDecimal> retrievedAmountFL,
-                                            // List<BigDecimal> retrievedAmountEUR,
-                                            // List<BigDecimal> retrievedAmountUSD
   ) {
 
     ConfirmationLetter letter = new ConfirmationLetter();
