@@ -18,7 +18,6 @@ import java.util.*;
 
 public class ConfirmationLetterGenerator {
 
-  @SuppressWarnings("unused")
   private static Log logger = LogFactory.getLog(ConfirmationLetterGenerator.class);
   private static final String COLLECTIVE = "collectief";
 
