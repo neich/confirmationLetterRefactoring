@@ -78,9 +78,9 @@ public class ConfirmationLetterGenerator {
         .toString());
 
     letter.setBatchTotalDebit(debitBatchTotal(
-        hashBatchRecordsBalance.getBatchTotals(), client).toString());
+        hashBatchRecordsBalance.getBatchTotals(), client.getAmountDivider()).toString());
     letter.setBatchTotalCredit(creditBatchTotal(
-        hashBatchRecordsBalance.getBatchTotals(), client).toString());
+        hashBatchRecordsBalance.getBatchTotals(), client.getAmountDivider()).toString());
 
     letter.setTotalProcessedRecords(hashBatchRecordsBalance
         .getRecordsTotal().toString());
@@ -498,7 +498,7 @@ public class ConfirmationLetterGenerator {
   }
 
   private BigDecimal creditBatchTotal(Map<Integer, BatchTotal> batchTotals,
-                                      Client client) {
+                                      Integer divider) {
     Double sum = new Double(0);
     Iterator<BatchTotal> itr = batchTotals.values().iterator();
     while (itr.hasNext()) {
@@ -506,19 +506,19 @@ public class ConfirmationLetterGenerator {
 
       sum = sum + total.getCreditValue().doubleValue();
     }
-    Double d = sum / new Double(client.getAmountDivider());
+    Double d = sum / new Double(divider);
     return new BigDecimal(d);
   }
 
   private BigDecimal debitBatchTotal(Map<Integer, BatchTotal> batchTotals,
-                                     Client client) {
+                                     Integer divider) {
     Double sum = new Double(0);
     Iterator<BatchTotal> itr = batchTotals.values().iterator();
     while (itr.hasNext()) {
       BatchTotal total = itr.next();
       sum = sum + total.getCreditCounterValueForDebit().doubleValue();
     }
-    Double d = sum / new Double(client.getAmountDivider());
+    Double d = sum / new Double(divider);
     return new BigDecimal(d);
   }
 
