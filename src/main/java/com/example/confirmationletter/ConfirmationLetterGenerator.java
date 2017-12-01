@@ -77,8 +77,8 @@ public class ConfirmationLetterGenerator {
     letter.setHashTotalDebit(hashBatchRecordsBalance.getHashTotalDebit()
         .toString());
 
-    letter.setBatchTotalDebit(calculateTotalOverBatches(hashBatchRecordsBalance.getBatchTotals(), client.getAmountDivider(), Constants.DEBIT).toString());
-    letter.setBatchTotalCredit(calculateTotalOverBatches(hashBatchRecordsBalance.getBatchTotals(), client.getAmountDivider(), Constants.CREDIT).toString());
+    letter.setBatchTotalDebit(calculateTotalOverBatches(hashBatchRecordsBalance.getBatchTotals().values(), client.getAmountDivider(), Constants.DEBIT).toString());
+    letter.setBatchTotalCredit(calculateTotalOverBatches(hashBatchRecordsBalance.getBatchTotals().values(), client.getAmountDivider(), Constants.CREDIT).toString());
 
     letter.setTotalProcessedRecords(hashBatchRecordsBalance
         .getRecordsTotal().toString());
@@ -495,9 +495,9 @@ public class ConfirmationLetterGenerator {
     return retrievedAmounts;
   }
 
-  BigDecimal calculateTotalOverBatches(Map<Integer, BatchTotal> batchTotals, Integer divider, String sign) {
+  BigDecimal calculateTotalOverBatches(Collection<BatchTotal> batchTotals, Integer divider, String sign) {
     BigDecimal sum = BigDecimal.ZERO;
-    Iterator<BatchTotal> itr = batchTotals.values().iterator();
+    Iterator<BatchTotal> itr = batchTotals.iterator();
     while (itr.hasNext()) {
       BatchTotal total = itr.next();
 
