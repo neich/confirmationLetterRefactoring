@@ -497,8 +497,8 @@ public class ConfirmationLetterGenerator {
     return retrievedAmounts;
   }
 
-  private BigDecimal creditBatchTotal(Map<Integer, BatchTotal> batchTotals,
-                                      Integer divider) {
+  BigDecimal creditBatchTotal(Map<Integer, BatchTotal> batchTotals,
+                              Integer divider) {
     BigDecimal sum = BigDecimal.ZERO;
     Iterator<BatchTotal> itr = batchTotals.values().iterator();
     while (itr.hasNext()) {
