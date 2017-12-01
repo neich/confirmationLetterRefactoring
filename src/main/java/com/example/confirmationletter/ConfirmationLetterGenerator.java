@@ -77,10 +77,8 @@ public class ConfirmationLetterGenerator {
     letter.setHashTotalDebit(hashBatchRecordsBalance.getHashTotalDebit()
         .toString());
 
-    letter.setBatchTotalDebit(debitBatchTotal(
-        hashBatchRecordsBalance.getBatchTotals(), client.getAmountDivider()).toString());
-    letter.setBatchTotalCredit(creditBatchTotal(
-        hashBatchRecordsBalance.getBatchTotals(), client.getAmountDivider()).toString());
+    letter.setBatchTotalDebit(calculateTotalOverBatches(client.getAmountDivider(), hashBatchRecordsBalance.getBatchTotals(), Constants.DEBIT).toString());
+    letter.setBatchTotalCredit(calculateTotalOverBatches(client.getAmountDivider(), hashBatchRecordsBalance.getBatchTotals(), Constants.CREDIT).toString());
 
     letter.setTotalProcessedRecords(hashBatchRecordsBalance
         .getRecordsTotal().toString());
@@ -497,11 +495,6 @@ public class ConfirmationLetterGenerator {
     return retrievedAmounts;
   }
 
-  BigDecimal creditBatchTotal(Map<Integer, BatchTotal> batchTotals,
-                              Integer divider) {
-    return calculateTotalOverBatches(divider, batchTotals, Constants.CREDIT);
-  }
-
   BigDecimal calculateTotalOverBatches(Integer divider, Map<Integer, BatchTotal> batchTotals, String sign) {
     BigDecimal sum = BigDecimal.ZERO;
     Iterator<BatchTotal> itr = batchTotals.values().iterator();
@@ -511,11 +504,6 @@ public class ConfirmationLetterGenerator {
       sum = sum.add(total.getTotalForSign(sign));
     }
     return sum.divide(new BigDecimal(divider));
-  }
-
-  private BigDecimal debitBatchTotal(Map<Integer, BatchTotal> batchTotals,
-                                     Integer divider) {
-    return calculateTotalOverBatches(divider, batchTotals, Constants.DEBIT);
   }
 
   private List<AmountAndRecordsPerBank> amountAndRecords(
