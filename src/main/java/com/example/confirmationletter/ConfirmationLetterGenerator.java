@@ -497,12 +497,10 @@ public class ConfirmationLetterGenerator {
 
   BigDecimal calculateTotalOverBatches(Collection<BatchTotal> batchTotals, Integer divider, String sign) {
     BigDecimal sum = BigDecimal.ZERO;
-    Iterator<BatchTotal> itr = batchTotals.iterator();
-    while (itr.hasNext()) {
-      BatchTotal total = itr.next();
 
+    for (BatchTotal total: batchTotals)
       sum = sum.add(total.getTotalForSign(sign));
-    }
+
     return sum.divide(new BigDecimal(divider));
   }
 
