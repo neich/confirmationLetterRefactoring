@@ -6,7 +6,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -21,12 +22,12 @@ public class ConfirmationLetterGeneratorTest {
 
   @Test
   public void testCreditBatchTotal_divider_one_mixed_credit_debit() {
-    HashMap<Integer, BatchTotal> batchTotals = new HashMap<Integer, BatchTotal>();
-    batchTotals.put(99, createBatchTotal(1, Constants.CREDIT));
-    batchTotals.put(98, createBatchTotal(10, Constants.CREDIT));
-    batchTotals.put(97, createBatchTotal(5, Constants.DEBIT));
+    Collection<BatchTotal> batchTotals = new ArrayList<>();
+    batchTotals.add(createBatchTotal(1, Constants.CREDIT));
+    batchTotals.add(createBatchTotal(10, Constants.CREDIT));
+    batchTotals.add(createBatchTotal(5, Constants.DEBIT));
 
-    assertEquals(new BigDecimal(11), letterGenerator.creditBatchTotal(batchTotals, 1));
+    assertEquals(new BigDecimal(11), letterGenerator.calculateTotalOverBatches(batchTotals, 1, Constants.CREDIT));
   }
 
   private BatchTotal createBatchTotal(int number, String sign) {
