@@ -238,7 +238,7 @@ public class ConfirmationLetterGenerator {
     BigDecimal totalCreditUSD = new BigDecimal(0);
     BigDecimal totalCreditEUR = new BigDecimal(0);
 
-    if (client.getCounterTransfer().equalsIgnoreCase(Constants.TRUE)) {
+    if (client.isBalanced()) {
       for (Record record : records) {
         if (record.getFeeRecord() != 1) {
           if ((record.getCurrency().getCode().equals(

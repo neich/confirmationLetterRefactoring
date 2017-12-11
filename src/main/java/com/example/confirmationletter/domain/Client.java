@@ -1,5 +1,7 @@
 package com.example.confirmationletter.domain;
 
+import com.example.confirmationletter.record.service.impl.Constants;
+
 public class Client {
   private String creditDebit;
   private Object profile;
@@ -36,5 +38,9 @@ public class Client {
 
   public void setAmountDivider(Integer amountDivider) {
     this.amountDivider = amountDivider;
+  }
+
+  public boolean isBalanced() {
+    return this.getCounterTransfer().equalsIgnoreCase(Constants.TRUE);
   }
 }
