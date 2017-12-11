@@ -2,7 +2,6 @@ package com.example.confirmationletter;
 
 import com.example.confirmationletter.dao.CurrencyDao;
 import com.example.confirmationletter.domain.*;
-import com.example.confirmationletter.domain.Currency;
 import com.example.confirmationletter.record.command.FileUploadCommand;
 import com.example.confirmationletter.record.domain.FaultRecord;
 import com.example.confirmationletter.record.domain.TempRecord;
@@ -14,7 +13,10 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.webflow.execution.RequestContext;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ConfirmationLetterGenerator {
 
@@ -58,7 +60,7 @@ public class ConfirmationLetterGenerator {
 
   private OurOwnByteArrayOutputStream generateConfirmationLetterAsPDF(Client client, ConfirmationLetter letter) {
     return letterSelector
-          .generateLetter(client.getCreditDebit(), letter);
+        .generateLetter(client.getCreditDebit(), letter);
   }
 
   private ConfirmationLetter createConfirmationLetter(FileUploadCommand fileUploadCommand, Client client, HashBatchRecordsBalance hashBatchRecordsBalance, String branchName, List<AmountAndRecordsPerBank> bankMap, List<FaultRecord> faultyRecords, FileExtension extension, List<Record> records, List<TempRecord> faultyAccountNumberRecordList, List<TempRecord> sansDuplicateFaultRecordsList) {
@@ -253,30 +255,25 @@ public class ConfirmationLetterGenerator {
             if (record.isCreditRecord()) {
               recordAmountCreditFL.add(record.getAmount());
             }
+          }
+          if (record.hasEurCurrency()) {
 
-            if (record.hasEurCurrency()) {
-
-              if (record.isDebitRecord()) {
-                recordAmountDebitEUR.add(record.getAmount());
-              }
-              if (record.isCreditRecord()) {
-                recordAmountCreditEUR.add(record.getAmount());
-              }
-
+            if (record.isDebitRecord()) {
+              recordAmountDebitEUR.add(record.getAmount());
             }
-
+            if (record.isCreditRecord()) {
+              recordAmountCreditEUR.add(record.getAmount());
+            }
           }
-        }
+          if (record.hasUsdCurrency()) {
 
-        if (record.hasUsdCurrency()) {
-
-          if (record.isDebitRecord()) {
-            recordAmountDebitUSD.add(record.getAmount());
+            if (record.isDebitRecord()) {
+              recordAmountDebitUSD.add(record.getAmount());
+            }
+            if (record.isCreditRecord()) {
+              recordAmountCreditUSD.add(record.getAmount());
+            }
           }
-          if (record.isCreditRecord()) {
-            recordAmountCreditUSD.add(record.getAmount());
-          }
-
         }
 
       }
