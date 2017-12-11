@@ -99,4 +99,12 @@ public class Record {
   public boolean isCreditRecord() {
     return getSign().equalsIgnoreCase(Constants.CREDIT);
   }
+
+  public boolean isCounterTransferRecord() {
+    return getIsCounterTransferRecord() == 1;
+  }
+
+  public boolean hasFee() {
+    return getFeeRecord().compareTo(new Integer(0)) != 0;
+  }
 }

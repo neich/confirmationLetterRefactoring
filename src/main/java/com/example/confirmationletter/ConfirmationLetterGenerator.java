@@ -235,7 +235,7 @@ public class ConfirmationLetterGenerator {
 
     if (client.isBalanced()) {
       for (Record record : records) {
-        if (record.getFeeRecord() != 1 && record.isDebitRecord()) {
+        if (record.isCounterTransferRecord() && record.isDebitRecord()) {
           addAmountToTotal(retrievedAmounts, record);
         }
       }
@@ -245,8 +245,7 @@ public class ConfirmationLetterGenerator {
 
       for (Record record : records) {
         logger.debug("COUNTERTRANSFER [" + record.getIsCounterTransferRecord() + "] FEERECORD [" + record.getFeeRecord() + "]");
-        if (record.getIsCounterTransferRecord().compareTo(new Integer(0)) == 0
-            && record.getFeeRecord().compareTo(new Integer(0)) == 0) {
+        if (!record.isCounterTransferRecord() && !record.hasFee()) {
           if ((record.hasFlCurrency())) {
             if (record.isDebitRecord()) {
               recordAmountDebitFL.add(record.getAmount());
