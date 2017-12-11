@@ -244,36 +244,22 @@ public class ConfirmationLetterGenerator {
     }
     // Not Balanced
     else {
-
+      Map<String, RetrievedAmountsHolder> holders = new HashMap<String, RetrievedAmountsHolder>() {{
+        this.put(Constants.CURRENCY_FL, new RetrievedAmountsHolder());
+        this.put(Constants.CURRENCY_EURO, new RetrievedAmountsHolder());
+        this.put(Constants.CURRENCY_USD, new RetrievedAmountsHolder());
+      }};
       for (Record record : records) {
         logger.debug("COUNTERTRANSFER [" + record.getIsCounterTransferRecord() + "] FEERECORD [" + record.getFeeRecord() + "]");
         if (!record.isCounterTransferRecord() && !record.hasFee()) {
-          if ((record.hasFlCurrency())) {
-            if (record.isDebitRecord()) {
-              recordAmountDebitFL.add(record.getAmount());
-            }
-            if (record.isCreditRecord()) {
-              recordAmountCreditFL.add(record.getAmount());
-            }
-          }
-          if (record.hasEurCurrency()) {
+          String currencyISOCode = getCurrencyByCode(record.getCurrency().getCode());
+          RetrievedAmountsHolder holder = holders.get(currencyISOCode);
 
-            if (record.isDebitRecord()) {
-              recordAmountDebitEUR.add(record.getAmount());
-            }
-            if (record.isCreditRecord()) {
-              recordAmountCreditEUR.add(record.getAmount());
-            }
-          }
-          if (record.hasUsdCurrency()) {
+          if (record.isDebitRecord())
+            holder.recordAmountDebit.add(record.getAmount());
 
-            if (record.isDebitRecord()) {
-              recordAmountDebitUSD.add(record.getAmount());
-            }
-            if (record.isCreditRecord()) {
-              recordAmountCreditUSD.add(record.getAmount());
-            }
-          }
+          if (record.isCreditRecord())
+            holder.recordAmountCredit.add(record.getAmount());
         }
 
       }
