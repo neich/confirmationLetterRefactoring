@@ -240,14 +240,14 @@ public class ConfirmationLetterGenerator {
 
     if (client.isBalanced()) {
       for (Record record : records) {
-        if (record.getFeeRecord() != 1) {
-          if (record.hasFlCurrency() && record.isDebitRecord()) {
+        if (record.getFeeRecord() != 1 && record.isDebitRecord()) {
+          if (record.hasFlCurrency()) {
             recordAmountFL.add(record.getAmount());
           }
-          if (record.hasEurCurrency() && record.isDebitRecord()) {
+          if (record.hasEurCurrency()) {
             recordAmountEUR.add(record.getAmount());
           }
-          if (record.hasUsdCurrency() && record.isDebitRecord()) {
+          if (record.hasUsdCurrency()) {
             recordAmountUSD.add(record.getAmount());
           }
         }
