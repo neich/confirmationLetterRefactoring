@@ -271,8 +271,7 @@ public class ConfirmationLetterGenerator {
               recordAmountCreditFL.add(record.getAmount());
             }
 
-            if (record.getCurrency().getCode().equals(
-                Constants.EUR_CURRENCY_CODE)) {
+            if (record.hasEurCurrency()) {
 
               if (record.isDebitRecord()) {
                 recordAmountDebitEUR.add(record.getAmount());
