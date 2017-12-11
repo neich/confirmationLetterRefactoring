@@ -249,8 +249,7 @@ public class ConfirmationLetterGenerator {
             // system.out.println("recordAmountFL: ["+ recordAmountFL + "]");
 
           }
-          if (record.getCurrency().getCode().equals(
-              Constants.EUR_CURRENCY_CODE)
+          if (record.hasEurCurrency()
               && record.getSign().equalsIgnoreCase(
               Constants.DEBIT)) {
             recordAmountEUR = record.getAmount().add(

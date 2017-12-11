@@ -80,4 +80,9 @@ public class Record {
         getCurrency().getCode().equals(
             Constants.FL_CURRENCY_CODE_FOR_WEIRD_BANK);
   }
+
+  public boolean hasEurCurrency() {
+    return getCurrency().getCode().equals(
+        Constants.EUR_CURRENCY_CODE);
+  }
 }
