@@ -237,8 +237,7 @@ public class ConfirmationLetterGenerator {
 
     if (client.isBalanced()) {
       calculateTotalsForBalancedRecords(records, retrievedAmounts);
-    }
-    else {
+    } else {
       Map<String, RetrievedAmountsHolder> holders = new HashMap<String, RetrievedAmountsHolder>() {{
         this.put(Constants.CURRENCY_FL, new RetrievedAmountsHolder());
         this.put(Constants.CURRENCY_EURO, new RetrievedAmountsHolder());
@@ -259,42 +258,42 @@ public class ConfirmationLetterGenerator {
           Currency currency = currencyDao
               .retrieveCurrencyOnId(new Integer(currencyId));
           sansDupRec.setCurrencycode(currency.getCode());
-        } else {
+        }
 
-          if (currencyCode.equals(Constants.FL_CURRENCY_CODE)
-              || currencyCode
-              .equals(Constants.FL_CURRENCY_CODE_FOR_WEIRD_BANK)) {
+        if (currencyCode.equals(Constants.FL_CURRENCY_CODE)
+            || currencyCode
+            .equals(Constants.FL_CURRENCY_CODE_FOR_WEIRD_BANK)) {
 
-            if (sansDupRec.getSign().equalsIgnoreCase(
-                Constants.DEBIT)) {
-              amountSansDebitFL = new BigDecimal(sansDupRec
-                  .getAmount()).add(amountSansDebitFL);
-            } else {
-              amountSansCreditFL = new BigDecimal(sansDupRec
-                  .getAmount()).add(amountSansCreditFL);
-            }
-          }
-          if (currencyCode.equals(Constants.USD_CURRENCY_CODE)) {
-            if (sansDupRec.getSign().equalsIgnoreCase(
-                Constants.DEBIT)) {
-              amountSansDebitUSD = new BigDecimal(sansDupRec
-                  .getAmount()).add(amountSansDebitUSD);
-            } else {
-              amountSansCreditUSD = new BigDecimal(sansDupRec
-                  .getAmount()).add(amountSansCreditUSD);
-            }
-          }
-          if (currencyCode.equals(Constants.EUR_CURRENCY_CODE)) {
-            if (sansDupRec.getSign().equalsIgnoreCase(
-                Constants.DEBIT)) {
-              amountSansDebitEUR = new BigDecimal(sansDupRec
-                  .getAmount()).add(amountSansDebitEUR);
-            } else {
-              amountSansCreditEUR = new BigDecimal(sansDupRec
-                  .getAmount()).add(amountSansCreditEUR);
-            }
+          if (sansDupRec.getSign().equalsIgnoreCase(
+              Constants.DEBIT)) {
+            amountSansDebitFL = new BigDecimal(sansDupRec
+                .getAmount()).add(amountSansDebitFL);
+          } else {
+            amountSansCreditFL = new BigDecimal(sansDupRec
+                .getAmount()).add(amountSansCreditFL);
           }
         }
+        if (currencyCode.equals(Constants.USD_CURRENCY_CODE)) {
+          if (sansDupRec.getSign().equalsIgnoreCase(
+              Constants.DEBIT)) {
+            amountSansDebitUSD = new BigDecimal(sansDupRec
+                .getAmount()).add(amountSansDebitUSD);
+          } else {
+            amountSansCreditUSD = new BigDecimal(sansDupRec
+                .getAmount()).add(amountSansCreditUSD);
+          }
+        }
+        if (currencyCode.equals(Constants.EUR_CURRENCY_CODE)) {
+          if (sansDupRec.getSign().equalsIgnoreCase(
+              Constants.DEBIT)) {
+            amountSansDebitEUR = new BigDecimal(sansDupRec
+                .getAmount()).add(amountSansDebitEUR);
+          } else {
+            amountSansCreditEUR = new BigDecimal(sansDupRec
+                .getAmount()).add(amountSansCreditEUR);
+          }
+        }
+
 
       }
 
