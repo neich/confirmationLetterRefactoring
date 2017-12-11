@@ -115,13 +115,13 @@ public class ConfirmationLetterGenerator {
       List<TempRecord> faultyAccountNumberRecordList, Client client) {
     Map<String, BigDecimal> retrievedAmountsFaultyAccountNumber = new HashMap<String, BigDecimal>();
 
-    BigDecimal faultyAccRecordAmountCreditFL = new BigDecimal(0);
-    BigDecimal faultyAccRecordAmountCreditUSD = new BigDecimal(0);
-    BigDecimal faultyAccRecordAmountCreditEUR = new BigDecimal(0);
+    BigDecimal faultyAccRecordAmountCreditFL = BigDecimal.ZERO;
+    BigDecimal faultyAccRecordAmountCreditUSD = BigDecimal.ZERO;
+    BigDecimal faultyAccRecordAmountCreditEUR = BigDecimal.ZERO;
 
-    BigDecimal faultyAccRecordAmountDebitFL = new BigDecimal(0);
-    BigDecimal faultyAccRecordAmountDebitUSD = new BigDecimal(0);
-    BigDecimal faultyAccRecordAmountDebitEUR = new BigDecimal(0);
+    BigDecimal faultyAccRecordAmountDebitFL = BigDecimal.ZERO;
+    BigDecimal faultyAccRecordAmountDebitUSD = BigDecimal.ZERO;
+    BigDecimal faultyAccRecordAmountDebitEUR = BigDecimal.ZERO;
 
     for (TempRecord faultyAccountNumberRecord : faultyAccountNumberRecordList) {
       // // logger.debug("faultyAccountNumberRecord: "+
@@ -210,33 +210,33 @@ public class ConfirmationLetterGenerator {
 
     Map<String, BigDecimal> retrievedAmounts = new HashMap<String, BigDecimal>();
 
-    BigDecimal recordAmountFL = new BigDecimal(0);
-    BigDecimal recordAmountUSD = new BigDecimal(0);
-    BigDecimal recordAmountEUR = new BigDecimal(0);
+    BigDecimal recordAmountFL = BigDecimal.ZERO;
+    BigDecimal recordAmountUSD = BigDecimal.ZERO;
+    BigDecimal recordAmountEUR = BigDecimal.ZERO;
 
-    BigDecimal recordAmountDebitFL = new BigDecimal(0);
-    BigDecimal recordAmountDebitEUR = new BigDecimal(0);
-    BigDecimal recordAmountDebitUSD = new BigDecimal(0);
+    BigDecimal recordAmountDebitFL = BigDecimal.ZERO;
+    BigDecimal recordAmountDebitEUR = BigDecimal.ZERO;
+    BigDecimal recordAmountDebitUSD = BigDecimal.ZERO;
 
-    BigDecimal recordAmountCreditFL = new BigDecimal(0);
-    BigDecimal recordAmountCreditEUR = new BigDecimal(0);
-    BigDecimal recordAmountCreditUSD = new BigDecimal(0);
+    BigDecimal recordAmountCreditFL = BigDecimal.ZERO;
+    BigDecimal recordAmountCreditEUR = BigDecimal.ZERO;
+    BigDecimal recordAmountCreditUSD = BigDecimal.ZERO;
 
-    BigDecimal amountSansDebitFL = new BigDecimal(0);
-    BigDecimal amountSansDebitUSD = new BigDecimal(0);
-    BigDecimal amountSansDebitEUR = new BigDecimal(0);
+    BigDecimal amountSansDebitFL = BigDecimal.ZERO;
+    BigDecimal amountSansDebitUSD = BigDecimal.ZERO;
+    BigDecimal amountSansDebitEUR = BigDecimal.ZERO;
 
-    BigDecimal amountSansCreditFL = new BigDecimal(0);
-    BigDecimal amountSansCreditUSD = new BigDecimal(0);
-    BigDecimal amountSansCreditEUR = new BigDecimal(0);
+    BigDecimal amountSansCreditFL = BigDecimal.ZERO;
+    BigDecimal amountSansCreditUSD = BigDecimal.ZERO;
+    BigDecimal amountSansCreditEUR = BigDecimal.ZERO;
 
-    BigDecimal totalDebitFL = new BigDecimal(0);
-    BigDecimal totalDebitUSD = new BigDecimal(0);
-    BigDecimal totalDebitEUR = new BigDecimal(0);
+    BigDecimal totalDebitFL = BigDecimal.ZERO;
+    BigDecimal totalDebitUSD = BigDecimal.ZERO;
+    BigDecimal totalDebitEUR = BigDecimal.ZERO;
 
-    BigDecimal totalCreditFL = new BigDecimal(0);
-    BigDecimal totalCreditUSD = new BigDecimal(0);
-    BigDecimal totalCreditEUR = new BigDecimal(0);
+    BigDecimal totalCreditFL = BigDecimal.ZERO;
+    BigDecimal totalCreditUSD = BigDecimal.ZERO;
+    BigDecimal totalCreditEUR = BigDecimal.ZERO;
 
     if (client.isBalanced()) {
       for (Record record : records) {
