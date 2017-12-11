@@ -251,99 +251,33 @@ public class ConfirmationLetterGenerator {
 
       Map<String, BigDecimal> retrievedAccountNumberAmounts = calculateAmountsFaultyAccountNumber(
           faultyAccountNumberRecordList, client);
-      // logger.info("Before total debit FL");
-      // logger.info("amountSansDebitFL "+amountSansDebitFL);
-      if (retrievedAccountNumberAmounts.get("FaultyAccDebitFL") != null
-          && amountSansDebitFL != null) {
-        // logger.info("retrievedAccountNumberAmounts.get(FaultyAccDebitFL) "+retrievedAccountNumberAmounts.get("FaultyAccDebitFL"));
-        totalDebitFL = recordAmountDebitFL.add(amountSansDebitFL)
-            .subtract(
-                retrievedAccountNumberAmounts
-                    .get("FaultyAccDebitFL"));
-      } else if (amountSansDebitFL != null) {
-        totalDebitFL = recordAmountDebitFL.add(amountSansDebitFL);
-      } else {
-        totalDebitFL = recordAmountDebitFL;
-      }
-      // logger.info("totalDebitFL "+totalDebitFL);
 
-      if (retrievedAccountNumberAmounts.get("FaultyAccCreditFL") != null
-          && amountSansCreditFL != null) {
-        // logger.debug("retrievedAccountNumberAmounts.get(FaultyAccCreditFL):"+retrievedAccountNumberAmounts.get("FaultyAccCreditFL"));
-        totalCreditFL = recordAmountCreditFL.add(amountSansCreditFL)
-            .subtract(
-                retrievedAccountNumberAmounts
-                    .get("FaultyAccCreditFL"));
-      } else if (amountSansCreditFL != null) {
-        totalCreditFL = recordAmountCreditFL.add(amountSansCreditFL);
-      } else {
-        totalCreditFL = recordAmountCreditFL;
-      }
-      // logger.info("totalCreditFL: "+totalCreditFL);
+      BigDecimal recordAmountFL = calculateTotals(holders.get(Constants.CURRENCY_FL),
+          retrievedAccountNumberAmounts.get("FaultyAccDebitFL"),
+          retrievedAccountNumberAmounts.get("FaultyAccCreditFL"));
+      BigDecimal recordAmountUSD = calculateTotals(holders.get(Constants.CURRENCY_USD),
+          retrievedAccountNumberAmounts.get("FaultyAccDebitUSD"),
+          retrievedAccountNumberAmounts.get("FaultyAccCreditUSD"));
+      BigDecimal recordAmountEUR = calculateTotals(holders.get(Constants.CURRENCY_EURO),
+          retrievedAccountNumberAmounts.get("FaultyAccDebitEUR"),
+          retrievedAccountNumberAmounts.get("FaultyAccCreditEUR"));
 
-      if (retrievedAccountNumberAmounts.get("FaultyAccDebitUSD") != null
-          && amountSansDebitUSD != null) {
-        // logger.info("retrievedAccountNumberAmounts.get(FaultyAccDebitUSD) "+retrievedAccountNumberAmounts.get("FaultyAccDebitUSD"));
-        totalDebitUSD = recordAmountDebitUSD.add(amountSansDebitUSD)
-            .subtract(
-                retrievedAccountNumberAmounts
-                    .get("FaultyAccDebitUSD"));
-      } else if (amountSansDebitUSD != null) {
-        totalDebitUSD = recordAmountDebitUSD.add(amountSansDebitUSD);
-      } else {
-        totalDebitUSD = recordAmountDebitUSD;
-      }
-      // logger.info("totalDebitUSD "+totalDebitUSD);
-
-      if (retrievedAccountNumberAmounts.get("FaultyAccCreditUSD") != null
-          && amountSansCreditUSD != null) {
-        // logger.debug("retrievedAccountNumberAmounts.get(FaultyAccCreditUSD):"+retrievedAccountNumberAmounts.get("FaultyAccCreditUSD"));
-        totalCreditUSD = recordAmountCreditUSD.add(amountSansCreditUSD)
-            .subtract(
-                retrievedAccountNumberAmounts
-                    .get("FaultyAccCreditUSD"));
-      } else if (amountSansCreditUSD != null) {
-        totalCreditUSD = recordAmountCreditUSD.add(amountSansCreditUSD);
-      } else {
-        totalCreditUSD = recordAmountCreditUSD;
-      }
-      // logger.info("totalCreditUSD: "+totalCreditUSD);
-
-      if (retrievedAccountNumberAmounts.get("FaultyAccDebitEUR") != null
-          && amountSansDebitEUR != null) {
-        // logger.info("retrievedAccountNumberAmounts.get(FaultyAccDebitEUR) "+retrievedAccountNumberAmounts.get("FaultyAccDebitEUR"));
-        totalDebitEUR = recordAmountDebitEUR.add(amountSansDebitEUR)
-            .subtract(
-                retrievedAccountNumberAmounts
-                    .get("FaultyAccDebitEUR"));
-      } else if (amountSansDebitEUR != null) {
-        totalDebitEUR = recordAmountDebitEUR.add(amountSansDebitEUR);
-      } else {
-        totalDebitEUR = recordAmountDebitEUR;
-      }
-      // logger.info("totalDebitEUR "+totalDebitEUR);
-
-      if (retrievedAccountNumberAmounts.get("FaultyAccCreditEUR") != null
-          && amountSansCreditEUR != null) {
-        // logger.debug("retrievedAccountNumberAmounts.get(FaultyAccCreditEUR):"+retrievedAccountNumberAmounts.get("FaultyAccCreditEUR"));
-        totalCreditEUR = recordAmountCreditEUR.add(amountSansCreditEUR)
-            .subtract(
-                retrievedAccountNumberAmounts
-                    .get("FaultyAccCreditEUR"));
-      } else if (amountSansCreditEUR != null) {
-        totalCreditEUR = recordAmountCreditEUR.add(amountSansCreditEUR);
-      } else {
-        totalCreditEUR = recordAmountCreditEUR;
-      }
-      // logger.info("totalCreditEUR: "+totalCreditEUR);
-
-      retrievedAmounts.put(Constants.CURRENCY_EURO, totalDebitFL.subtract(totalCreditFL).abs());
-      retrievedAmounts.put(Constants.CURRENCY_FL, totalDebitUSD.subtract(totalCreditUSD).abs());
-      retrievedAmounts.put(Constants.CURRENCY_FL, totalDebitEUR.subtract(totalCreditEUR).abs());
-
+      retrievedAmounts.put(Constants.CURRENCY_EURO, recordAmountEUR);
+      retrievedAmounts.put(Constants.CURRENCY_USD, recordAmountUSD);
+      retrievedAmounts.put(Constants.CURRENCY_FL, recordAmountFL);
     }
 
     return retrievedAmounts;
+  }
+
+  private BigDecimal calculateTotals(RetrievedAmountsHolder holder,
+                               BigDecimal faultyAccountDebitAmount,
+                               BigDecimal faultyAccountCreditAmount) {
+    holder.totalDebit = holder.recordAmountDebit.add(holder.amountSansDebit)
+        .subtract(faultyAccountDebitAmount);
+    holder.totalCredit = holder.recordAmountCredit.add(holder.amountSansCredit)
+        .subtract(faultyAccountCreditAmount);
+    return holder.totalCredit.subtract(holder.totalDebit).abs();
   }
 
   private void calculateTotalsForSansDuplicateFaultRecords(Client client, List<TempRecord> sansDuplicateFaultRecordsList, Map<String, RetrievedAmountsHolder> holders) {
