@@ -241,10 +241,7 @@ public class ConfirmationLetterGenerator {
     if (client.isBalanced()) {
       for (Record record : records) {
         if (record.getFeeRecord() != 1) {
-          if ((record.getCurrency().getCode().equals(
-              Constants.FL_CURRENCY_CODE) || record
-              .getCurrency().getCode().equals(
-                  Constants.FL_CURRENCY_CODE_FOR_WEIRD_BANK))
+          if (record.hasFlCurrency()
               && record.getSign().equalsIgnoreCase(
               Constants.DEBIT)) {
             recordAmountFL = record.getAmount().add(
@@ -282,10 +279,7 @@ public class ConfirmationLetterGenerator {
         logger.debug("COUNTERTRANSFER [" + record.getIsCounterTransferRecord() + "] FEERECORD [" + record.getFeeRecord() + "]");
         if (record.getIsCounterTransferRecord().compareTo(new Integer(0)) == 0
             && record.getFeeRecord().compareTo(new Integer(0)) == 0) {
-          if ((record.getCurrency().getCode().equals(
-              Constants.FL_CURRENCY_CODE) || record
-              .getCurrency().getCode().equals(
-                  Constants.FL_CURRENCY_CODE_FOR_WEIRD_BANK))) {
+          if ((record.hasFlCurrency())) {
 //						System.out.println("record to string: ["+record.toString()+"]");
             if (record.getSign().equalsIgnoreCase(Constants.DEBIT)) {
 //							 System.out.println("record.getamount DEBIT = ["+ record.getAmount() + "]");

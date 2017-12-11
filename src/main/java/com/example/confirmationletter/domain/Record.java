@@ -1,7 +1,7 @@
 package com.example.confirmationletter.domain;
 
-import java.lang.reflect.GenericDeclaration;
-import java.lang.reflect.TypeVariable;
+import com.example.confirmationletter.record.service.impl.Constants;
+
 import java.math.BigDecimal;
 
 public class Record {
@@ -72,5 +72,12 @@ public class Record {
 
   public void setBeneficiaryAccountNumber(String beneficiaryAccountNumber) {
     this.beneficiaryAccountNumber = beneficiaryAccountNumber;
+  }
+
+  public boolean hasFlCurrency() {
+    return getCurrency().getCode().equals(
+        Constants.FL_CURRENCY_CODE) ||
+        getCurrency().getCode().equals(
+            Constants.FL_CURRENCY_CODE_FOR_WEIRD_BANK);
   }
 }
