@@ -209,10 +209,6 @@ public class ConfirmationLetterGenerator {
 
     Map<String, BigDecimal> retrievedAmounts = new HashMap<String, BigDecimal>();
 
-    BigDecimal recordAmountFL = BigDecimal.ZERO;
-    BigDecimal recordAmountUSD = BigDecimal.ZERO;
-    BigDecimal recordAmountEUR = BigDecimal.ZERO;
-
     BigDecimal recordAmountDebitFL = BigDecimal.ZERO;
     BigDecimal recordAmountDebitEUR = BigDecimal.ZERO;
     BigDecimal recordAmountDebitUSD = BigDecimal.ZERO;
@@ -240,20 +236,15 @@ public class ConfirmationLetterGenerator {
     if (client.isBalanced()) {
       for (Record record : records) {
         if (record.getFeeRecord() != 1 && record.isDebitRecord()) {
-          if (record.hasFlCurrency()) {
-            recordAmountFL.add(record.getAmount());
+          String currencyIsoCode = getCurrencyByCode(record.getCurrency().getCode());
+          BigDecimal previousValue = retrievedAmounts.get(currencyIsoCode);
+          if (previousValue == null) {
+            previousValue = BigDecimal.ZERO;
           }
-          if (record.hasEurCurrency()) {
-            recordAmountEUR.add(record.getAmount());
-          }
-          if (record.hasUsdCurrency()) {
-            recordAmountUSD.add(record.getAmount());
-          }
+          BigDecimal newValue = previousValue.add(record.getAmount());
+          retrievedAmounts.put(currencyIsoCode, newValue);
         }
       }
-      retrievedAmounts.put(Constants.CURRENCY_EURO, recordAmountEUR);
-      retrievedAmounts.put(Constants.CURRENCY_FL, recordAmountUSD);
-      retrievedAmounts.put(Constants.CURRENCY_FL, recordAmountFL);
     }
     // Not Balanced
     else {
@@ -437,13 +428,9 @@ public class ConfirmationLetterGenerator {
       }
       // logger.info("totalCreditEUR: "+totalCreditEUR);
 
-      recordAmountFL = totalDebitFL.subtract(totalCreditFL).abs();
-      recordAmountUSD = totalDebitUSD.subtract(totalCreditUSD).abs();
-      recordAmountEUR = totalDebitEUR.subtract(totalCreditEUR).abs();
-
-      retrievedAmounts.put(Constants.CURRENCY_EURO, recordAmountEUR);
-      retrievedAmounts.put(Constants.CURRENCY_FL, recordAmountUSD);
-      retrievedAmounts.put(Constants.CURRENCY_FL, recordAmountFL);
+      retrievedAmounts.put(Constants.CURRENCY_EURO, totalDebitFL.subtract(totalCreditFL).abs());
+      retrievedAmounts.put(Constants.CURRENCY_FL, totalDebitUSD.subtract(totalCreditUSD).abs());
+      retrievedAmounts.put(Constants.CURRENCY_FL, totalDebitEUR.subtract(totalCreditEUR).abs());
 
     }
 
