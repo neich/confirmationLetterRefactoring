@@ -249,12 +249,10 @@ public class ConfirmationLetterGenerator {
 
       // Sansduplicate
       for (TempRecord sansDupRec : sansDuplicateFaultRecordsList) {
-        // logger.debug("sansDupRec: "+sansDupRec);
+        setTempRecordSignToClientSignIfUnset(client, sansDupRec);
+
         Integer currencyCode = sansDupRec.getCurrencycode();
-        if (sansDupRec.getSign() == null) {
-          String sign = client.getCreditDebit();
-          sansDupRec.setSign(sign);
-        }
+
         if (currencyCode == null) {
           String currencyId = currencyDao
               .retrieveCurrencyDefault(client.getProfile());
@@ -395,6 +393,13 @@ public class ConfirmationLetterGenerator {
     }
 
     return retrievedAmounts;
+  }
+
+  private void setTempRecordSignToClientSignIfUnset(Client client, TempRecord sansDupRec) {
+    if (sansDupRec.getSign() == null) {
+      String sign = client.getCreditDebit();
+      sansDupRec.setSign(sign);
+    }
   }
 
   private void calculateTotalsForCounterBalancedRecords(List<Record> records, Map<String, RetrievedAmountsHolder> holders) {
