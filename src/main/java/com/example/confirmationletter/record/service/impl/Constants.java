@@ -10,6 +10,7 @@ public class Constants {
   public static final String USD_CURRENCY_CODE = "USD_CODE";
   public static final String EUR_CURRENCY_CODE = "EUR_CODE";
   public static final String TRUE = "TRUE";
+  public static final String FALSE = "FALSE";
   public static final String CREDIT = "CREDIT";
   public static final String CREDITING = "CREDITING";
   public static final String RBTT_BANK_ALTERNATE = "RBTT_BANK_ALTERNATE";
