@@ -85,4 +85,18 @@ public class Record {
     return getCurrency().getCode().equals(
         Constants.EUR_CURRENCY_CODE);
   }
+
+  public boolean isDebitRecord() {
+    return getSign().equalsIgnoreCase(
+    Constants.DEBIT);
+  }
+
+  public boolean hasUsdCurrency() {
+    return getCurrency().getCode().equals(
+        Constants.USD_CURRENCY_CODE);
+  }
+
+  public boolean isCreditRecord() {
+    return getSign().equalsIgnoreCase(Constants.CREDIT);
+  }
 }

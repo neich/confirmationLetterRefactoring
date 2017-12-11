@@ -241,26 +241,19 @@ public class ConfirmationLetterGenerator {
     if (client.isBalanced()) {
       for (Record record : records) {
         if (record.getFeeRecord() != 1) {
-          if (record.hasFlCurrency()
-              && record.getSign().equalsIgnoreCase(
-              Constants.DEBIT)) {
+          if (record.hasFlCurrency() && record.isDebitRecord()) {
             recordAmountFL = record.getAmount().add(
                 recordAmountFL);
             // system.out.println("recordAmountFL: ["+ recordAmountFL + "]");
 
           }
-          if (record.hasEurCurrency()
-              && record.getSign().equalsIgnoreCase(
-              Constants.DEBIT)) {
+          if (record.hasEurCurrency() && record.isDebitRecord()) {
             recordAmountEUR = record.getAmount().add(
                 recordAmountEUR);
             // system.out.println("recordAmountEUR: ["+ recordAmountEUR + "]");
 
           }
-          if (record.getCurrency().getCode().equals(
-              Constants.USD_CURRENCY_CODE)
-              && record.getSign().equalsIgnoreCase(
-              Constants.DEBIT)) {
+          if (record.hasUsdCurrency() && record.isDebitRecord()) {
             recordAmountUSD = record.getAmount().add(
                 recordAmountUSD);
             // system.out.println("recordAmountUSD: ["+ recordAmountUSD + "]");
@@ -280,14 +273,14 @@ public class ConfirmationLetterGenerator {
             && record.getFeeRecord().compareTo(new Integer(0)) == 0) {
           if ((record.hasFlCurrency())) {
 //						System.out.println("record to string: ["+record.toString()+"]");
-            if (record.getSign().equalsIgnoreCase(Constants.DEBIT)) {
+            if (record.isDebitRecord()) {
 //							 System.out.println("record.getamount DEBIT = ["+ record.getAmount() + "]");
               // system.out.println("recordAmountDebitFL 1 = "+ recordAmountDebitFL);
               recordAmountDebitFL = record.getAmount().add(
                   recordAmountDebitFL);
 //							System.out.println("recordAmountDebitFL: ["+recordAmountDebitFL+"]");
             }
-            if (record.getSign().equalsIgnoreCase(Constants.CREDIT)) {
+            if (record.isCreditRecord()) {
 //							 System.out.println("record.getamount CREDIT = ["+record.getAmount()+"]");
               // system.out.println("recordAmountCreditFL 1 = ["+recordAmountCreditFL+"]");
 
@@ -299,14 +292,12 @@ public class ConfirmationLetterGenerator {
             if (record.getCurrency().getCode().equals(
                 Constants.EUR_CURRENCY_CODE)) {
 
-              if (record.getSign().equalsIgnoreCase(
-                  Constants.DEBIT)) {
+              if (record.isDebitRecord()) {
                 recordAmountDebitEUR = record.getAmount().add(
                     recordAmountDebitEUR);
                 // system.out.println("recordAmountDebitEUR: ["+recordAmountDebitEUR+"]");
               }
-              if (record.getSign().equalsIgnoreCase(
-                  Constants.CREDIT)) {
+              if (record.isCreditRecord()) {
                 recordAmountCreditEUR = record.getAmount().add(
                     recordAmountCreditEUR);
                 // system.out.println("recordAmountCreditEUR: ["+recordAmountCreditEUR+"]");
@@ -317,15 +308,14 @@ public class ConfirmationLetterGenerator {
           }
         }
 
-        if (record.getCurrency().getCode().equals(
-            Constants.USD_CURRENCY_CODE)) {
+        if (record.hasUsdCurrency()) {
 
-          if (record.getSign().equalsIgnoreCase(Constants.DEBIT)) {
+          if (record.isDebitRecord()) {
             recordAmountDebitUSD = record.getAmount().add(
                 recordAmountDebitUSD);
             // system.out.println("recordAmountDebitUSD: ["+recordAmountDebitUSD+"]");
           }
-          if (record.getSign().equalsIgnoreCase(Constants.CREDIT)) {
+          if (record.isCreditRecord()) {
             recordAmountCreditUSD = record.getAmount().add(
                 recordAmountCreditUSD);
             // system.out.println("recordAmountCreditUSD: ["+recordAmountCreditUSD+"]");
