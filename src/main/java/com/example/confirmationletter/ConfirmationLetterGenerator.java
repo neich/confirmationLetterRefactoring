@@ -247,28 +247,7 @@ public class ConfirmationLetterGenerator {
       calculateTotalsForCounterBalancedRecords(records, holders);
 
       // Sansduplicate
-      for (TempRecord sansDupRec : sansDuplicateFaultRecordsList) {
-        setTempRecordSignToClientSignIfUnset(client, sansDupRec);
-
-        Integer currencyCode = sansDupRec.getCurrencycode();
-
-        if (currencyCode == null) {
-          String currencyId = currencyDao
-              .retrieveCurrencyDefault(client.getProfile());
-          Currency currency = currencyDao
-              .retrieveCurrencyOnId(new Integer(currencyId));
-          sansDupRec.setCurrencycode(currency.getCode());
-        }
-
-        String currencyISOCode = getCurrencyByCode(currencyCode);
-        RetrievedAmountsHolder holder = holders.get(currencyISOCode);
-
-        if (sansDupRec.isDebitRecord())
-          holder.amountSansDebit.add(BigDecimal.valueOf(sansDupRec.getAmount()));
-
-        if (sansDupRec.isCreditRecord())
-          holder.amountSansCredit.add(BigDecimal.valueOf(sansDupRec.getAmount()));
-      }
+      calculateTotalsForSansDuplicateFaultRecords(client, sansDuplicateFaultRecordsList, holders);
 
       Map<String, BigDecimal> retrievedAccountNumberAmounts = calculateAmountsFaultyAccountNumber(
           faultyAccountNumberRecordList, client);
@@ -365,6 +344,31 @@ public class ConfirmationLetterGenerator {
     }
 
     return retrievedAmounts;
+  }
+
+  private void calculateTotalsForSansDuplicateFaultRecords(Client client, List<TempRecord> sansDuplicateFaultRecordsList, Map<String, RetrievedAmountsHolder> holders) {
+    for (TempRecord sansDupRec : sansDuplicateFaultRecordsList) {
+      setTempRecordSignToClientSignIfUnset(client, sansDupRec);
+
+      Integer currencyCode = sansDupRec.getCurrencycode();
+
+      if (currencyCode == null) {
+        String currencyId = currencyDao
+            .retrieveCurrencyDefault(client.getProfile());
+        Currency currency = currencyDao
+            .retrieveCurrencyOnId(new Integer(currencyId));
+        sansDupRec.setCurrencycode(currency.getCode());
+      }
+
+      String currencyISOCode = getCurrencyByCode(currencyCode);
+      RetrievedAmountsHolder holder = holders.get(currencyISOCode);
+
+      if (sansDupRec.isDebitRecord())
+        holder.amountSansDebit.add(BigDecimal.valueOf(sansDupRec.getAmount()));
+
+      if (sansDupRec.isCreditRecord())
+        holder.amountSansCredit.add(BigDecimal.valueOf(sansDupRec.getAmount()));
+    }
   }
 
   private void setTempRecordSignToClientSignIfUnset(Client client, TempRecord sansDupRec) {
