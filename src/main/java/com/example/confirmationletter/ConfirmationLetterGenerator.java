@@ -251,10 +251,10 @@ public class ConfirmationLetterGenerator {
             recordAmountUSD.add(record.getAmount());
           }
         }
-        retrievedAmounts.put(Constants.CURRENCY_EURO, recordAmountEUR);
-        retrievedAmounts.put(Constants.CURRENCY_FL, recordAmountUSD);
-        retrievedAmounts.put(Constants.CURRENCY_FL, recordAmountFL);
       }
+      retrievedAmounts.put(Constants.CURRENCY_EURO, recordAmountEUR);
+      retrievedAmounts.put(Constants.CURRENCY_FL, recordAmountUSD);
+      retrievedAmounts.put(Constants.CURRENCY_FL, recordAmountFL);
     }
     // Not Balanced
     else {
