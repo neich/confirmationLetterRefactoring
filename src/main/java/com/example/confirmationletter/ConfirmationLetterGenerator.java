@@ -77,8 +77,8 @@ public class ConfirmationLetterGenerator {
     letter.setHashTotalDebit(hashBatchRecordsBalance.getHashTotalDebit()
         .toString());
 
-    letter.setBatchTotalDebit(calculateTotalOverBatches(hashBatchRecordsBalance.getBatchTotals().values(), client.getAmountDivider(), Constants.DEBIT).toString());
-    letter.setBatchTotalCredit(calculateTotalOverBatches(hashBatchRecordsBalance.getBatchTotals().values(), client.getAmountDivider(), Constants.CREDIT).toString());
+    letter.setBatchTotalDebit(hashBatchRecordsBalance.getBatchTotal(client.getAmountDivider(), Constants.DEBIT).toString());
+    letter.setBatchTotalCredit(hashBatchRecordsBalance.getBatchTotal(client.getAmountDivider(), Constants.CREDIT).toString());
 
     letter.setTotalProcessedRecords(hashBatchRecordsBalance
         .getRecordsTotal().toString());
@@ -493,15 +493,6 @@ public class ConfirmationLetterGenerator {
     }
 
     return retrievedAmounts;
-  }
-
-  BigDecimal calculateTotalOverBatches(Collection<BatchTotal> batchTotals, Integer divider, String sign) {
-    BigDecimal sum = BigDecimal.ZERO;
-
-    for (BatchTotal total: batchTotals)
-      sum = sum.add(total.getTotalForSign(sign));
-
-    return sum.divide(new BigDecimal(divider));
   }
 
   private List<AmountAndRecordsPerBank> amountAndRecords(

@@ -3,6 +3,7 @@ package com.example.confirmationletter.domain;
 import org.apache.commons.lang.ObjectUtils;
 
 import javax.print.attribute.Size2DSyntax;
+import java.math.BigDecimal;
 import java.util.Map;
 
 public class HashBatchRecordsBalance {
@@ -29,7 +30,7 @@ public class HashBatchRecordsBalance {
     this.hashTotalDebit = hashTotalDebit;
   }
 
-  public Map<Integer, BatchTotal> getBatchTotals() {
+  public Map<Integer, BatchTotal> getBatchTotal() {
     return batchTotals;
   }
 
@@ -60,4 +61,14 @@ public class HashBatchRecordsBalance {
   public void setCollectionType(Object collectionType) {
     this.collectionType = collectionType;
   }
+
+  public BigDecimal getBatchTotal(Integer divider, String sign) {
+    BigDecimal sum = BigDecimal.ZERO;
+
+    for (BatchTotal total: batchTotals.values())
+      sum = sum.add(total.getTotalForSign(sign));
+
+    return sum.divide(new BigDecimal(divider));
+  }
+
 }
