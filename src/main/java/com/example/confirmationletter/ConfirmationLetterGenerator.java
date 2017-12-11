@@ -260,41 +260,14 @@ public class ConfirmationLetterGenerator {
           sansDupRec.setCurrencycode(currency.getCode());
         }
 
-        if (currencyCode.equals(Constants.FL_CURRENCY_CODE)
-            || currencyCode
-            .equals(Constants.FL_CURRENCY_CODE_FOR_WEIRD_BANK)) {
+        String currencyISOCode = getCurrencyByCode(currencyCode);
+        RetrievedAmountsHolder holder = holders.get(currencyISOCode);
 
-          if (sansDupRec.getSign().equalsIgnoreCase(
-              Constants.DEBIT)) {
-            amountSansDebitFL = new BigDecimal(sansDupRec
-                .getAmount()).add(amountSansDebitFL);
-          } else {
-            amountSansCreditFL = new BigDecimal(sansDupRec
-                .getAmount()).add(amountSansCreditFL);
-          }
-        }
-        if (currencyCode.equals(Constants.USD_CURRENCY_CODE)) {
-          if (sansDupRec.getSign().equalsIgnoreCase(
-              Constants.DEBIT)) {
-            amountSansDebitUSD = new BigDecimal(sansDupRec
-                .getAmount()).add(amountSansDebitUSD);
-          } else {
-            amountSansCreditUSD = new BigDecimal(sansDupRec
-                .getAmount()).add(amountSansCreditUSD);
-          }
-        }
-        if (currencyCode.equals(Constants.EUR_CURRENCY_CODE)) {
-          if (sansDupRec.getSign().equalsIgnoreCase(
-              Constants.DEBIT)) {
-            amountSansDebitEUR = new BigDecimal(sansDupRec
-                .getAmount()).add(amountSansDebitEUR);
-          } else {
-            amountSansCreditEUR = new BigDecimal(sansDupRec
-                .getAmount()).add(amountSansCreditEUR);
-          }
-        }
+        if (sansDupRec.isDebitRecord())
+          holder.amountSansDebit.add(BigDecimal.valueOf(sansDupRec.getAmount()));
 
-
+        if (sansDupRec.isCreditRecord())
+          holder.amountSansCredit.add(BigDecimal.valueOf(sansDupRec.getAmount()));
       }
 
       Map<String, BigDecimal> retrievedAccountNumberAmounts = calculateAmountsFaultyAccountNumber(

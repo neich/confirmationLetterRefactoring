@@ -1,5 +1,7 @@
 package com.example.confirmationletter.record.domain;
 
+import com.example.confirmationletter.record.service.impl.Constants;
+
 public class TempRecord {
   private String sign;
   private Integer currencycode;
@@ -32,4 +34,12 @@ public class TempRecord {
   public void setAmount(Integer amount) {
     this.amount = amount;
   }
+
+  public boolean isDebitRecord() {
+    return this.getSign().equalsIgnoreCase(Constants.DEBIT);
+  }
+  public boolean isCreditRecord() {
+    return this.getSign().equalsIgnoreCase(Constants.CREDIT);
+  }
+
 }
