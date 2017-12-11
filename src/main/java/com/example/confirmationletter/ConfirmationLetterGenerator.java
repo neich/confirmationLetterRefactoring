@@ -602,4 +602,13 @@ public class ConfirmationLetterGenerator {
       throw new IllegalArgumentException("Unknown currency code encountered");
     }
   }
+
+  class RetrievedAmountsHolder {
+    BigDecimal recordAmountDebit = BigDecimal.ZERO;
+    BigDecimal recordAmountCredit = BigDecimal.ZERO;
+    BigDecimal amountSansDebit = BigDecimal.ZERO;
+    BigDecimal amountSansCredit = BigDecimal.ZERO;
+    BigDecimal totalDebit = BigDecimal.ZERO;
+    BigDecimal totalCredit = BigDecimal.ZERO;
+  }
 }
