@@ -236,33 +236,17 @@ public class ConfirmationLetterGenerator {
     BigDecimal totalCreditEUR = BigDecimal.ZERO;
 
     if (client.isBalanced()) {
-      for (Record record : records) {
-        if (record.isCounterTransferRecord() && record.isDebitRecord()) {
-          addAmountToTotal(retrievedAmounts, record);
-        }
-      }
+      calculateTotalsForBalancedRecords(records, retrievedAmounts);
     }
-    // Not Balanced
     else {
       Map<String, RetrievedAmountsHolder> holders = new HashMap<String, RetrievedAmountsHolder>() {{
         this.put(Constants.CURRENCY_FL, new RetrievedAmountsHolder());
         this.put(Constants.CURRENCY_EURO, new RetrievedAmountsHolder());
         this.put(Constants.CURRENCY_USD, new RetrievedAmountsHolder());
       }};
-      for (Record record : records) {
-        logger.debug("COUNTERTRANSFER [" + record.getIsCounterTransferRecord() + "] FEERECORD [" + record.getFeeRecord() + "]");
-        if (!record.isCounterTransferRecord() && !record.hasFee()) {
-          String currencyISOCode = getCurrencyByCode(record.getCurrency().getCode());
-          RetrievedAmountsHolder holder = holders.get(currencyISOCode);
 
-          if (record.isDebitRecord())
-            holder.recordAmountDebit.add(record.getAmount());
+      calculateTotalsForCounterBalancedRecords(records, holders);
 
-          if (record.isCreditRecord())
-            holder.recordAmountCredit.add(record.getAmount());
-        }
-
-      }
       // Sansduplicate
       for (TempRecord sansDupRec : sansDuplicateFaultRecordsList) {
         // logger.debug("sansDupRec: "+sansDupRec);
@@ -411,6 +395,31 @@ public class ConfirmationLetterGenerator {
     }
 
     return retrievedAmounts;
+  }
+
+  private void calculateTotalsForCounterBalancedRecords(List<Record> records, Map<String, RetrievedAmountsHolder> holders) {
+    for (Record record : records) {
+      logger.debug("COUNTERTRANSFER [" + record.getIsCounterTransferRecord() + "] FEERECORD [" + record.getFeeRecord() + "]");
+      if (!record.isCounterTransferRecord() && !record.hasFee()) {
+        String currencyISOCode = getCurrencyByCode(record.getCurrency().getCode());
+        RetrievedAmountsHolder holder = holders.get(currencyISOCode);
+
+        if (record.isDebitRecord())
+          holder.recordAmountDebit.add(record.getAmount());
+
+        if (record.isCreditRecord())
+          holder.recordAmountCredit.add(record.getAmount());
+      }
+
+    }
+  }
+
+  private void calculateTotalsForBalancedRecords(List<Record> records, Map<String, BigDecimal> retrievedAmounts) {
+    for (Record record : records) {
+      if (record.isCounterTransferRecord() && record.isDebitRecord()) {
+        addAmountToTotal(retrievedAmounts, record);
+      }
+    }
   }
 
   private void addAmountToTotal(Map<String, BigDecimal> retrievedAmounts, Record record) {
