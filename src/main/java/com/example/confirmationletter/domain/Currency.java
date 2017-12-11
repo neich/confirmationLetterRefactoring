@@ -1,14 +1,14 @@
 package com.example.confirmationletter.domain;
 
 public class Currency {
-  private Object code;
+  private Integer code;
   private String currencyType;
 
-  public Object getCode() {
+  public Integer getCode() {
     return code;
   }
 
-  public void setCode(Object code) {
+  public void setCode(Integer code) {
     this.code = code;
   }
 

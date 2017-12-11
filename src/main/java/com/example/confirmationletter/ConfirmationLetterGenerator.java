@@ -136,8 +136,7 @@ public class ConfirmationLetterGenerator {
             .getProfile());
         Currency currency = currencyDao
             .retrieveCurrencyOnId(new Integer(currencyId));
-        faultyAccountNumberRecord.setCurrencycode(currency.getCode()
-            .toString());
+        faultyAccountNumberRecord.setCurrencycode(currency.getCode());
       }
 
       if (faultyAccountNumberRecord.getCurrencycode().equals(
@@ -300,7 +299,7 @@ public class ConfirmationLetterGenerator {
       // Sansduplicate
       for (TempRecord sansDupRec : sansDuplicateFaultRecordsList) {
         // logger.debug("sansDupRec: "+sansDupRec);
-        String currencyCode = sansDupRec.getCurrencycode();
+        Integer currencyCode = sansDupRec.getCurrencycode();
         if (sansDupRec.getSign() == null) {
           String sign = client.getCreditDebit();
           sansDupRec.setSign(sign);
@@ -310,7 +309,7 @@ public class ConfirmationLetterGenerator {
               .retrieveCurrencyDefault(client.getProfile());
           Currency currency = currencyDao
               .retrieveCurrencyOnId(new Integer(currencyId));
-          sansDupRec.setCurrencycode(currency.getCode().toString());
+          sansDupRec.setCurrencycode(currency.getCode());
         } else {
 
           if (currencyCode.equals(Constants.FL_CURRENCY_CODE)

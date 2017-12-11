@@ -2,7 +2,7 @@ package com.example.confirmationletter.record.domain;
 
 public class TempRecord {
   private String sign;
-  private String currencycode;
+  private Integer currencycode;
   private Integer amount;
 
   public String getSign() {
@@ -13,7 +13,7 @@ public class TempRecord {
     this.sign = sign;
   }
 
-  public String getCurrencycode() {
+  public Integer getCurrencycode() {
     return currencycode;
   }
 
@@ -21,7 +21,7 @@ public class TempRecord {
     return true;
   }
 
-  public void setCurrencycode(String currencycode) {
+  public void setCurrencycode(Integer currencycode) {
     this.currencycode = currencycode;
   }
 

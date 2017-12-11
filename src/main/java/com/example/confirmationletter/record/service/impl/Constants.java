@@ -4,11 +4,11 @@ public class Constants {
   public static final String YES = "YES";
   public static final String CURRENCY_EURO = "EURO";
   public static final String CURRENCY_FL = "FL";
-  public static final String FL_CURRENCY_CODE = "FL_CODE";
-  public static final String FL_CURRENCY_CODE_FOR_WEIRD_BANK = "FL_CODE_WEIRD";
+  public static final Integer FL_CURRENCY_CODE = 1;
+  public static final Integer FL_CURRENCY_CODE_FOR_WEIRD_BANK = 2;
   public static final String DEBIT = "DEBT";
-  public static final String USD_CURRENCY_CODE = "USD_CODE";
-  public static final String EUR_CURRENCY_CODE = "EUR_CODE";
+  public static final Integer USD_CURRENCY_CODE = 3;
+  public static final Integer EUR_CURRENCY_CODE = 4;
   public static final String TRUE = "TRUE";
   public static final String FALSE = "FALSE";
   public static final String CREDIT = "CREDIT";
