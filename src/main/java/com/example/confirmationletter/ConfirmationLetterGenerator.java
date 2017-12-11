@@ -236,13 +236,7 @@ public class ConfirmationLetterGenerator {
     if (client.isBalanced()) {
       for (Record record : records) {
         if (record.getFeeRecord() != 1 && record.isDebitRecord()) {
-          String currencyIsoCode = getCurrencyByCode(record.getCurrency().getCode());
-          BigDecimal previousValue = retrievedAmounts.get(currencyIsoCode);
-          if (previousValue == null) {
-            previousValue = BigDecimal.ZERO;
-          }
-          BigDecimal newValue = previousValue.add(record.getAmount());
-          retrievedAmounts.put(currencyIsoCode, newValue);
+          addAmountToTotal(retrievedAmounts, record);
         }
       }
     }
@@ -435,6 +429,16 @@ public class ConfirmationLetterGenerator {
     }
 
     return retrievedAmounts;
+  }
+
+  private void addAmountToTotal(Map<String, BigDecimal> retrievedAmounts, Record record) {
+    String currencyIsoCode = getCurrencyByCode(record.getCurrency().getCode());
+    BigDecimal previousValue = retrievedAmounts.get(currencyIsoCode);
+    if (previousValue == null) {
+      previousValue = BigDecimal.ZERO;
+    }
+    BigDecimal newValue = previousValue.add(record.getAmount());
+    retrievedAmounts.put(currencyIsoCode, newValue);
   }
 
   private List<AmountAndRecordsPerBank> amountAndRecords(
