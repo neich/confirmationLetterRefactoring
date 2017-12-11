@@ -242,21 +242,13 @@ public class ConfirmationLetterGenerator {
       for (Record record : records) {
         if (record.getFeeRecord() != 1) {
           if (record.hasFlCurrency() && record.isDebitRecord()) {
-            recordAmountFL = record.getAmount().add(
-                recordAmountFL);
-            // system.out.println("recordAmountFL: ["+ recordAmountFL + "]");
-
+            recordAmountFL.add(record.getAmount());
           }
           if (record.hasEurCurrency() && record.isDebitRecord()) {
-            recordAmountEUR = record.getAmount().add(
-                recordAmountEUR);
-            // system.out.println("recordAmountEUR: ["+ recordAmountEUR + "]");
-
+            recordAmountEUR.add(record.getAmount());
           }
           if (record.hasUsdCurrency() && record.isDebitRecord()) {
-            recordAmountUSD = record.getAmount().add(
-                recordAmountUSD);
-            // system.out.println("recordAmountUSD: ["+ recordAmountUSD + "]");
+            recordAmountUSD.add(record.getAmount());
           }
         }
         retrievedAmounts.put(Constants.CURRENCY_EURO, recordAmountEUR);
@@ -272,35 +264,21 @@ public class ConfirmationLetterGenerator {
         if (record.getIsCounterTransferRecord().compareTo(new Integer(0)) == 0
             && record.getFeeRecord().compareTo(new Integer(0)) == 0) {
           if ((record.hasFlCurrency())) {
-//						System.out.println("record to string: ["+record.toString()+"]");
             if (record.isDebitRecord()) {
-//							 System.out.println("record.getamount DEBIT = ["+ record.getAmount() + "]");
-              // system.out.println("recordAmountDebitFL 1 = "+ recordAmountDebitFL);
-              recordAmountDebitFL = record.getAmount().add(
-                  recordAmountDebitFL);
-//							System.out.println("recordAmountDebitFL: ["+recordAmountDebitFL+"]");
+              recordAmountDebitFL.add(record.getAmount());
             }
             if (record.isCreditRecord()) {
-//							 System.out.println("record.getamount CREDIT = ["+record.getAmount()+"]");
-              // system.out.println("recordAmountCreditFL 1 = ["+recordAmountCreditFL+"]");
-
-              recordAmountCreditFL = record.getAmount().add(
-                  recordAmountCreditFL);
-//							System.out.println("recordAmountCreditFL: ["+recordAmountCreditFL+"]");
+              recordAmountCreditFL.add(record.getAmount());
             }
 
             if (record.getCurrency().getCode().equals(
                 Constants.EUR_CURRENCY_CODE)) {
 
               if (record.isDebitRecord()) {
-                recordAmountDebitEUR = record.getAmount().add(
-                    recordAmountDebitEUR);
-                // system.out.println("recordAmountDebitEUR: ["+recordAmountDebitEUR+"]");
+                recordAmountDebitEUR.add(record.getAmount());
               }
               if (record.isCreditRecord()) {
-                recordAmountCreditEUR = record.getAmount().add(
-                    recordAmountCreditEUR);
-                // system.out.println("recordAmountCreditEUR: ["+recordAmountCreditEUR+"]");
+                recordAmountCreditEUR.add(record.getAmount());
               }
 
             }
@@ -311,14 +289,10 @@ public class ConfirmationLetterGenerator {
         if (record.hasUsdCurrency()) {
 
           if (record.isDebitRecord()) {
-            recordAmountDebitUSD = record.getAmount().add(
-                recordAmountDebitUSD);
-            // system.out.println("recordAmountDebitUSD: ["+recordAmountDebitUSD+"]");
+            recordAmountDebitUSD.add(record.getAmount());
           }
           if (record.isCreditRecord()) {
-            recordAmountCreditUSD = record.getAmount().add(
-                recordAmountCreditUSD);
-            // system.out.println("recordAmountCreditUSD: ["+recordAmountCreditUSD+"]");
+            recordAmountCreditUSD.add(record.getAmount());
           }
 
         }
