@@ -147,10 +147,6 @@ public class ConfirmationLetterGenerator {
     }
   }
 
-  private RetrievedAmountsHolder getHolderForRecord(Record record, Map<String, RetrievedAmountsHolder> holders) {
-    return holders.get(getCurrencyByCode(record.getCurrency().getCode()));
-  }
-
   private void calculateTotalsForSansDuplicateFaultRecords(Client client, List<TempRecord> sansDuplicateFaultRecordsList, Map<String, RetrievedAmountsHolder> retrievedAmounts) {
     for (TempRecord sansDupRec : sansDuplicateFaultRecordsList) {
       setTempRecordSignToClientSignIfUnset(client, sansDupRec);
@@ -400,6 +396,10 @@ public class ConfirmationLetterGenerator {
   private void addAmountToSignedTotal(TempRecord record, Map<String, BigDecimal> amounts) {
     amounts.put(record.getSign(),
         amounts.get(record.getSign()).add(record.getAmount()));
+  }
+
+  private RetrievedAmountsHolder getHolderForRecord(Record record, Map<String, RetrievedAmountsHolder> holders) {
+    return holders.get(getCurrencyByCode(record.getCurrency().getCode()));
   }
 
   class RetrievedAmountsHolder {
