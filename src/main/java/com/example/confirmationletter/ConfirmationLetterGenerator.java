@@ -89,16 +89,16 @@ public class ConfirmationLetterGenerator {
     letter.setTransferType(hashBatchRecordsBalance.getCollectionType());
 
     // uncommented this line
-    Map<String, BigDecimal> retrievedAmounts = new HashMap<String, BigDecimal>();
-    retrievedAmounts = calculateRetrieveAmounts(records, faultyRecords,
+    Map<String, RetrievedAmountsHolder> retrievedAmounts = calculateRetrieveAmounts(records, faultyRecords,
         client, extension, faultyAccountNumberRecordList,
         sansDuplicateFaultRecordsList);
+
     letter.setRetrievedAmountEur(retrievedAmounts
-        .get(Constants.CURRENCY_EURO));
+        .get(Constants.CURRENCY_EURO).recordAmount);
     letter.setRetrievedAmountFL(retrievedAmounts
-        .get(Constants.CURRENCY_FL));
+        .get(Constants.CURRENCY_FL).recordAmount);
     letter.setRetrievedAmountUsd(retrievedAmounts
-        .get(Constants.CURRENCY_FL));
+        .get(Constants.CURRENCY_FL).recordAmount);
     return letter;
   }
 
@@ -147,44 +147,43 @@ public class ConfirmationLetterGenerator {
     }
   }
 
-  private Map<String, BigDecimal> calculateRetrieveAmounts(
+  private Map<String, RetrievedAmountsHolder> calculateRetrieveAmounts(
       List<Record> records,
       List<FaultRecord> faultyRecords,
       Client client, FileExtension extension,
       List<TempRecord> faultyAccountNumberRecordList,
       List<TempRecord> sansDuplicateFaultRecordsList) {
 
-    Map<String, BigDecimal> retrievedAmounts = new HashMap<String, BigDecimal>();
+    Map<String, RetrievedAmountsHolder> retrievedAmounts = new HashMap<String, RetrievedAmountsHolder>() {{
+      this.put(Constants.CURRENCY_FL, new RetrievedAmountsHolder());
+      this.put(Constants.CURRENCY_EURO, new RetrievedAmountsHolder());
+      this.put(Constants.CURRENCY_USD, new RetrievedAmountsHolder());
+    }};
 
     if (client.isBalanced()) {
       calculateTotalsForBalancedRecords(records, retrievedAmounts);
     } else {
-      Map<String, RetrievedAmountsHolder> holders = new HashMap<String, RetrievedAmountsHolder>() {{
-        this.put(Constants.CURRENCY_FL, new RetrievedAmountsHolder());
-        this.put(Constants.CURRENCY_EURO, new RetrievedAmountsHolder());
-        this.put(Constants.CURRENCY_USD, new RetrievedAmountsHolder());
-      }};
 
-      calculateTotalsForCounterBalancedRecords(records, holders);
+      calculateTotalsForCounterBalancedRecords(records, retrievedAmounts);
 
       // Sansduplicate
-      calculateTotalsForSansDuplicateFaultRecords(client, sansDuplicateFaultRecordsList, holders);
+      calculateTotalsForSansDuplicateFaultRecords(client, sansDuplicateFaultRecordsList, retrievedAmounts);
 
-      calculateAmountsFaultyAccountNumber(faultyAccountNumberRecordList, holders, client);
+      calculateAmountsFaultyAccountNumber(faultyAccountNumberRecordList, retrievedAmounts, client);
 
-      BigDecimal recordAmountFL = calculateTotals(holders.get(Constants.CURRENCY_FL),
-          holders.get(Constants.CURRENCY_FL).faultyAccRecordAmountDebit,
-          holders.get(Constants.CURRENCY_FL).faultyAccRecordAmountCredit);
-      BigDecimal recordAmountUSD = calculateTotals(holders.get(Constants.CURRENCY_USD),
-          holders.get(Constants.CURRENCY_USD).faultyAccRecordAmountDebit,
-          holders.get(Constants.CURRENCY_USD).faultyAccRecordAmountCredit);
-      BigDecimal recordAmountEUR = calculateTotals(holders.get(Constants.CURRENCY_EURO),
-          holders.get(Constants.CURRENCY_EURO).faultyAccRecordAmountDebit,
-          holders.get(Constants.CURRENCY_EURO).faultyAccRecordAmountCredit);
+      BigDecimal recordAmountFL = calculateTotals(retrievedAmounts.get(Constants.CURRENCY_FL),
+          retrievedAmounts.get(Constants.CURRENCY_FL).faultyAccRecordAmountDebit,
+          retrievedAmounts.get(Constants.CURRENCY_FL).faultyAccRecordAmountCredit);
+      BigDecimal recordAmountUSD = calculateTotals(retrievedAmounts.get(Constants.CURRENCY_USD),
+          retrievedAmounts.get(Constants.CURRENCY_USD).faultyAccRecordAmountDebit,
+          retrievedAmounts.get(Constants.CURRENCY_USD).faultyAccRecordAmountCredit);
+      BigDecimal recordAmountEUR = calculateTotals(retrievedAmounts.get(Constants.CURRENCY_EURO),
+          retrievedAmounts.get(Constants.CURRENCY_EURO).faultyAccRecordAmountDebit,
+          retrievedAmounts.get(Constants.CURRENCY_EURO).faultyAccRecordAmountCredit);
 
-      retrievedAmounts.put(Constants.CURRENCY_EURO, recordAmountEUR);
-      retrievedAmounts.put(Constants.CURRENCY_USD, recordAmountUSD);
-      retrievedAmounts.put(Constants.CURRENCY_FL, recordAmountFL);
+      retrievedAmounts.get(Constants.CURRENCY_FL).recordAmount = recordAmountFL;
+      retrievedAmounts.get(Constants.CURRENCY_USD).recordAmount = recordAmountUSD;
+      retrievedAmounts.get(Constants.CURRENCY_EURO).recordAmount = recordAmountEUR;
     }
 
     return retrievedAmounts;
@@ -249,7 +248,7 @@ public class ConfirmationLetterGenerator {
     }
   }
 
-  private void calculateTotalsForBalancedRecords(List<Record> records, Map<String, BigDecimal> retrievedAmounts) {
+  private void calculateTotalsForBalancedRecords(List<Record> records, Map<String, RetrievedAmountsHolder> retrievedAmounts) {
     for (Record record : records) {
       if (record.isCounterTransferRecord() && record.isDebitRecord()) {
         addAmountToTotal(retrievedAmounts, record);
@@ -257,14 +256,15 @@ public class ConfirmationLetterGenerator {
     }
   }
 
-  private void addAmountToTotal(Map<String, BigDecimal> retrievedAmounts, Record record) {
+  private void addAmountToTotal(Map<String, RetrievedAmountsHolder> retrievedAmounts, Record record) {
     String currencyIsoCode = getCurrencyByCode(record.getCurrency().getCode());
-    BigDecimal previousValue = retrievedAmounts.get(currencyIsoCode);
+    RetrievedAmountsHolder holder = retrievedAmounts.get(currencyIsoCode);
+    BigDecimal previousValue = holder.recordAmount;
     if (previousValue == null) {
       previousValue = BigDecimal.ZERO;
     }
     BigDecimal newValue = previousValue.add(record.getAmount());
-    retrievedAmounts.put(currencyIsoCode, newValue);
+    holder.recordAmount = newValue;
   }
 
   private List<AmountAndRecordsPerBank> amountAndRecords(
@@ -442,5 +442,6 @@ public class ConfirmationLetterGenerator {
     BigDecimal totalCredit = BigDecimal.ZERO;
     BigDecimal faultyAccRecordAmountDebit;
     BigDecimal faultyAccRecordAmountCredit;
+    BigDecimal recordAmount;
   }
 }
