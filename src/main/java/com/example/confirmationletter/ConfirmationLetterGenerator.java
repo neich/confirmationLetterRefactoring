@@ -89,7 +89,7 @@ public class ConfirmationLetterGenerator {
     letter.setTransferType(hashBatchRecordsBalance.getCollectionType());
 
     // uncommented this line
-    Map<String, RetrievedAmountsHolder> retrievedAmounts = calculateRetrieveAmounts(records, faultyRecords,
+    Map<String, RetrievedAmountsHolder> retrievedAmounts = calculateRetrievedAmounts(records, faultyRecords,
         client, extension, faultyAccountNumberRecordList,
         sansDuplicateFaultRecordsList);
 
@@ -147,7 +147,7 @@ public class ConfirmationLetterGenerator {
     }
   }
 
-  private Map<String, RetrievedAmountsHolder> calculateRetrieveAmounts(
+  private Map<String, RetrievedAmountsHolder> calculateRetrievedAmounts(
       List<Record> records,
       List<FaultRecord> faultyRecords,
       Client client, FileExtension extension,
