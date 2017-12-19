@@ -158,11 +158,8 @@ public class ConfirmationLetterGenerator {
 
       RetrievedAmountsHolder holder = retrievedAmounts.get(getCurrencyByCode(sansDupRec.getCurrencycode()));
 
-      if (sansDupRec.isDebitRecord())
-        holder.amountSansDebit.add(BigDecimal.valueOf(sansDupRec.getAmount()));
+      addAmountToSignedTotal(sansDupRec, holder.sansAmounts);
 
-      if (sansDupRec.isCreditRecord())
-        holder.amountSansCredit.add(BigDecimal.valueOf(sansDupRec.getAmount()));
     }
   }
 
@@ -176,15 +173,7 @@ public class ConfirmationLetterGenerator {
       RetrievedAmountsHolder holder = retrievedAmounts.get(
           getCurrencyByCode(faultyAccountNumberRecord.getCurrencycode()));
 
-      if (faultyAccountNumberRecord.isDebitRecord()) {
-        holder.faultyAccRecordAmountDebit = holder.faultyAccRecordAmountDebit.add(
-            new BigDecimal(faultyAccountNumberRecord.getAmount()));
-      }
-      if (faultyAccountNumberRecord.isCreditRecord()) {
-        holder.faultyAccRecordAmountCredit = holder.faultyAccRecordAmountCredit.add(
-            new BigDecimal(faultyAccountNumberRecord.getAmount()));
-      }
-
+      addAmountToSignedTotal(faultyAccountNumberRecord, holder.faultyAccRecordAmounts);
     }
   }
 
@@ -213,12 +202,10 @@ public class ConfirmationLetterGenerator {
   }
 
   private void calculateTotal(RetrievedAmountsHolder holder) {
-    holder.totalDebit = holder.recordAmounts.get(Constants.CREDIT).add(holder.amountSansDebit)
-        .subtract(holder.faultyAccRecordAmountDebit);
-    holder.totalCredit = holder.recordAmounts.get(Constants.DEBIT).add(holder.amountSansCredit)
-        .subtract(holder.faultyAccRecordAmountCredit);
+    holder.totals.put(Constants.CREDIT, holder.recordAmounts.get(Constants.CREDIT).add(holder.sansAmounts.get(Constants.CREDIT)).subtract(holder.faultyAccRecordAmounts.get(Constants.CREDIT)));
+    holder.totals.put(Constants.DEBIT, holder.recordAmounts.get(Constants.DEBIT).add(holder.sansAmounts.get(Constants.DEBIT)).subtract(holder.faultyAccRecordAmounts.get(Constants.DEBIT)));
 
-    holder.recordAmount = holder.totalCredit.subtract(holder.totalDebit).abs();
+    holder.recordAmount = holder.totals.get(Constants.CREDIT).subtract(holder.totals.get(Constants.DEBIT)).abs();
   }
 
   private void setTempRecordSignToClientSignIfUnset(Client client, TempRecord sansDupRec) {
@@ -410,17 +397,29 @@ public class ConfirmationLetterGenerator {
         amounts.get(record.getSign()).add(record.getAmount()));
   }
 
+  private void addAmountToSignedTotal(TempRecord record, Map<String, BigDecimal> amounts) {
+    amounts.put(record.getSign(),
+        amounts.get(record.getSign()).add(record.getAmount()));
+  }
+
   class RetrievedAmountsHolder {
     Map<String, BigDecimal> recordAmounts = new HashMap<String, BigDecimal>() {{
       put(Constants.CREDIT, BigDecimal.ZERO);
       put(Constants.DEBIT, BigDecimal.ZERO);
     }};
-    BigDecimal amountSansDebit = BigDecimal.ZERO;
-    BigDecimal amountSansCredit = BigDecimal.ZERO;
-    BigDecimal totalDebit = BigDecimal.ZERO;
-    BigDecimal totalCredit = BigDecimal.ZERO;
-    BigDecimal faultyAccRecordAmountDebit = BigDecimal.ZERO;
-    BigDecimal faultyAccRecordAmountCredit = BigDecimal.ZERO;
+    Map<String, BigDecimal> sansAmounts = new HashMap<String, BigDecimal>() {{
+      put(Constants.CREDIT, BigDecimal.ZERO);
+      put(Constants.DEBIT, BigDecimal.ZERO);
+    }};
+    Map<String, BigDecimal> faultyAccRecordAmounts = new HashMap<String, BigDecimal>() {{
+      put(Constants.CREDIT, BigDecimal.ZERO);
+      put(Constants.DEBIT, BigDecimal.ZERO);
+    }};
+    Map<String, BigDecimal> totals = new HashMap<String, BigDecimal>() {{
+      put(Constants.CREDIT, BigDecimal.ZERO);
+      put(Constants.DEBIT, BigDecimal.ZERO);
+    }};
+
     BigDecimal recordAmount = BigDecimal.ZERO;
   }
 }

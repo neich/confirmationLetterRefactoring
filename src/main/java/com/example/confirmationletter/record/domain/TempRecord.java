@@ -2,10 +2,12 @@ package com.example.confirmationletter.record.domain;
 
 import com.example.confirmationletter.record.service.impl.Constants;
 
+import java.math.BigDecimal;
+
 public class TempRecord {
   private String sign;
   private Integer currencycode;
-  private Integer amount;
+  private BigDecimal amount;
 
   public String getSign() {
     return sign;
@@ -27,11 +29,11 @@ public class TempRecord {
     this.currencycode = currencycode;
   }
 
-  public Integer getAmount() {
+  public BigDecimal getAmount() {
     return amount;
   }
 
-  public void setAmount(Integer amount) {
+  public void setAmount(BigDecimal amount) {
     this.amount = amount;
   }
 
