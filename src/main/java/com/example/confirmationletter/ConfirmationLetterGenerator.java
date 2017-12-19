@@ -98,7 +98,7 @@ public class ConfirmationLetterGenerator {
     letter.setTransferType(hashBatchRecordsBalance.getCollectionType());
 
     // uncommented this line
-    Map<String, RetrievedAmountsHolder> retrievedAmounts = calculateRetrievedAmounts(records, faultyRecords,
+    calculateRetrievedAmounts(records, faultyRecords,
         client, extension, faultyAccountNumberRecordList,
         sansDuplicateFaultRecordsList);
 
