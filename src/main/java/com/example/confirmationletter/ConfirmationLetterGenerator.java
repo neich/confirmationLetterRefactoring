@@ -7,7 +7,6 @@ import com.example.confirmationletter.record.domain.FaultRecord;
 import com.example.confirmationletter.record.domain.TempRecord;
 import com.example.confirmationletter.record.parser.FileExtension;
 import com.example.confirmationletter.record.service.impl.Constants;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.webflow.execution.RequestContext;
@@ -129,17 +128,8 @@ public class ConfirmationLetterGenerator {
       // // logger.debug("faultyAccountNumberRecord: "+
       // faultyAccountNumberRecord);
       // FL
-      if (StringUtils.isBlank(faultyAccountNumberRecord.getSign())) {
-        faultyAccountNumberRecord.setSign(client.getCreditDebit());
-      }
-
-      if (faultyAccountNumberRecord.getCurrencycode() == null) {
-        String currencyId = currencyDao.retrieveCurrencyDefault(client
-            .getProfile());
-        Currency currency = currencyDao
-            .retrieveCurrencyOnId(new Integer(currencyId));
-        faultyAccountNumberRecord.setCurrencycode(currency.getCode());
-      }
+      setTempRecordSignToClientSignIfUnset(client, faultyAccountNumberRecord);
+      setTempRecordCurrencyCodeToClientIfUnset(client, faultyAccountNumberRecord);
 
       if (faultyAccountNumberRecord.getCurrencycode().equals(
           Constants.FL_CURRENCY_CODE)
@@ -200,6 +190,16 @@ public class ConfirmationLetterGenerator {
 
     }
     return retrievedAmountsFaultyAccountNumber;
+  }
+
+  private void setTempRecordCurrencyCodeToClientIfUnset(Client client, TempRecord faultyAccountNumberRecord) {
+    if (faultyAccountNumberRecord.getCurrencycode() == null) {
+      String currencyId = currencyDao.retrieveCurrencyDefault(client
+          .getProfile());
+      Currency currency = currencyDao
+          .retrieveCurrencyOnId(new Integer(currencyId));
+      faultyAccountNumberRecord.setCurrencycode(currency.getCode());
+    }
   }
 
   private Map<String, BigDecimal> calculateRetrieveAmounts(
