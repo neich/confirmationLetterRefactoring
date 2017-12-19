@@ -4,7 +4,7 @@ import com.example.confirmationletter.record.service.impl.Constants;
 
 import java.math.BigDecimal;
 
-public class Record {
+public class Record implements GenericRecord {
   private Currency currency;
   private Integer feeRecord;
   private String sign;
@@ -106,5 +106,20 @@ public class Record {
 
   public boolean hasFee() {
     return getFeeRecord().compareTo(new Integer(0)) != 0;
+  }
+
+  @Override
+  public BigDecimal getAmountAsBigDecimal() {
+    return amount;
+  }
+
+  @Override
+  public Integer getCurrencyNumericCode() {
+    return getCurrency().getCode();
+  }
+
+  @Override
+  public void setCurrencyNumericCode(Integer code) {
+    getCurrency().setCode(code);
   }
 }
