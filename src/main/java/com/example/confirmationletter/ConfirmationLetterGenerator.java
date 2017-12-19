@@ -173,10 +173,7 @@ public class ConfirmationLetterGenerator {
 
   private void setTempRecordCurrencyCodeToClientIfUnset(Client client, TempRecord faultyAccountNumberRecord) {
     if (faultyAccountNumberRecord.getCurrencyCode() == null) {
-      String currencyId = currencyDao.retrieveCurrencyDefault(client
-          .getProfile());
-      Currency currency = currencyDao
-          .retrieveCurrencyOnId(new Integer(currencyId));
+      Currency currency = Util.getInstance().getDefaultCurrencyForClient(client);
       faultyAccountNumberRecord.setCurrencycode(currency.getCode());
     }
   }
