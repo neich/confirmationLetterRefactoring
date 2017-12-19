@@ -28,15 +28,17 @@ public class ConfirmationLetterGenerator {
   private String type;
   private LetterSelector letterSelector;
   private CurrencyDao currencyDao;
-  private final Map<String, RetrievedAmountsHolder> retrievedAmounts;
 
-  public ConfirmationLetterGenerator() {
-    retrievedAmounts = new HashMap<String, RetrievedAmountsHolder>() {{
-      this.put(Constants.CURRENCY_FL, new RetrievedAmountsHolder());
-      this.put(Constants.CURRENCY_EURO, new RetrievedAmountsHolder());
-      this.put(Constants.CURRENCY_USD, new RetrievedAmountsHolder());
-    }};
-  }
+  HashMap<String, BigDecimal> recordAmount = new HashMap<String, BigDecimal>() {{
+    put(Constants.CURRENCY_FL, BigDecimal.ZERO);
+    put(Constants.CURRENCY_USD, BigDecimal.ZERO);
+    put(Constants.CURRENCY_EURO, BigDecimal.ZERO);
+  }};
+
+  CreditDebitHolder recordAmounts = new CreditDebitHolder();
+  CreditDebitHolder sansAmounts = new CreditDebitHolder();
+  CreditDebitHolder totalAmounts = new CreditDebitHolder();
+  CreditDebitHolder faultyAccountRecordAmounts = new CreditDebitHolder();
 
   public CurrencyDao getCurrencyDao() {
     return currencyDao;
@@ -102,16 +104,14 @@ public class ConfirmationLetterGenerator {
         client, extension, faultyAccountNumberRecordList,
         sansDuplicateFaultRecordsList);
 
-    letter.setRetrievedAmountEur(retrievedAmounts
-        .get(Constants.CURRENCY_EURO).recordAmount);
-    letter.setRetrievedAmountFL(retrievedAmounts
-        .get(Constants.CURRENCY_FL).recordAmount);
-    letter.setRetrievedAmountUsd(retrievedAmounts
-        .get(Constants.CURRENCY_FL).recordAmount);
+    letter.setRetrievedAmountEur(recordAmount.get(Constants.CURRENCY_EURO));
+    letter.setRetrievedAmountFL(recordAmount.get(Constants.CURRENCY_FL));
+    letter.setRetrievedAmountUsd(recordAmount.get(Constants.CURRENCY_USD));
+
     return letter;
   }
 
-  private Map<String, RetrievedAmountsHolder> calculateRetrievedAmounts(
+  private void calculateRetrievedAmounts(
       List<Record> records,
       List<FaultRecord> faultyRecords,
       Client client, FileExtension extension,
@@ -127,8 +127,6 @@ public class ConfirmationLetterGenerator {
       calculateAmountsFaultyAccountNumber(faultyAccountNumberRecordList, client);
       calculateOverallTotalsForAllCurrencies();
     }
-
-    return retrievedAmounts;
   }
 
   private void calculateTotalsForBalancedRecords(List<Record> records) {
@@ -143,8 +141,7 @@ public class ConfirmationLetterGenerator {
     for (Record record : records) {
       logger.debug("COUNTERTRANSFER [" + record.getIsCounterTransferRecord() + "] FEERECORD [" + record.getFeeRecord() + "]");
       if (!record.isCounterTransferRecord() && !record.hasFee()) {
-        RetrievedAmountsHolder holder = getHolderForRecord(record);
-        addAmountToSignedTotal(record, holder.recordAmounts);
+        addAmountToSignedTotal(record, recordAmounts);
       }
 
     }
@@ -155,9 +152,7 @@ public class ConfirmationLetterGenerator {
       setTempRecordSignToClientSignIfUnset(client, sansDupRec);
       setTempRecordCurrencyCodeToClientIfUnset(client, sansDupRec);
 
-      RetrievedAmountsHolder holder = getHolderForRecord(sansDupRec);
-
-      addAmountToSignedTotal(sansDupRec, holder.sansAmounts);
+      addAmountToSignedTotal(sansDupRec, sansAmounts);
 
     }
   }
@@ -169,15 +164,13 @@ public class ConfirmationLetterGenerator {
       setTempRecordSignToClientSignIfUnset(client, faultyAccountNumberRecord);
       setTempRecordCurrencyCodeToClientIfUnset(client, faultyAccountNumberRecord);
 
-      RetrievedAmountsHolder holder = getHolderForRecord(faultyAccountNumberRecord);
-
-      addAmountToSignedTotal(faultyAccountNumberRecord, holder.faultyAccRecordAmounts);
+      addAmountToSignedTotal(faultyAccountNumberRecord, faultyAccountRecordAmounts);
     }
   }
 
   private void calculateOverallTotalsForAllCurrencies() {
-    for (RetrievedAmountsHolder holder : retrievedAmounts.values()) {
-      calculateTotal(holder);
+    for (String currency: recordAmount.keySet()) {
+      calculateTotal(currency);
     }
   }
 
@@ -199,11 +192,11 @@ public class ConfirmationLetterGenerator {
     }
   }
 
-  private void calculateTotal(RetrievedAmountsHolder holder) {
-    holder.totals.put(Constants.CREDIT, holder.recordAmounts.get(Constants.CREDIT).add(holder.sansAmounts.get(Constants.CREDIT)).subtract(holder.faultyAccRecordAmounts.get(Constants.CREDIT)));
-    holder.totals.put(Constants.DEBIT, holder.recordAmounts.get(Constants.DEBIT).add(holder.sansAmounts.get(Constants.DEBIT)).subtract(holder.faultyAccRecordAmounts.get(Constants.DEBIT)));
+  private void calculateTotal(String currency) {
+    totalAmounts.setValue(currency, Constants.CREDIT, recordAmounts.getValue(currency, Constants.CREDIT).add(sansAmounts.getValue(currency, Constants.CREDIT)).subtract(faultyAccountRecordAmounts.getValue(currency, Constants.CREDIT)));
+    totalAmounts.setValue(currency, Constants.DEBIT, recordAmounts.getValue(currency, Constants.DEBIT).add(sansAmounts.getValue(currency, Constants.DEBIT)).subtract(faultyAccountRecordAmounts.getValue(currency, Constants.DEBIT)));
 
-    holder.recordAmount = holder.totals.get(Constants.CREDIT).subtract(holder.totals.get(Constants.DEBIT)).abs();
+    recordAmount.put(currency, totalAmounts.getValue(currency, Constants.CREDIT).subtract(totalAmounts.getValue(currency, Constants.DEBIT)));
   }
 
   private void setTempRecordSignToClientSignIfUnset(Client client, TempRecord sansDupRec) {
@@ -215,13 +208,12 @@ public class ConfirmationLetterGenerator {
 
   private void addAmountToTotal(Record record) {
     String currencyIsoCode = getCurrencyByCode(record.getCurrency().getCode());
-    RetrievedAmountsHolder holder = retrievedAmounts.get(currencyIsoCode);
-    BigDecimal previousValue = holder.recordAmount;
+    BigDecimal previousValue = recordAmount.get(currencyIsoCode);
     if (previousValue == null) {
       previousValue = BigDecimal.ZERO;
     }
     BigDecimal newValue = previousValue.add(record.getAmount());
-    holder.recordAmount = newValue;
+    recordAmount.put(currencyIsoCode, newValue);
   }
 
   private List<AmountAndRecordsPerBank> amountAndRecords(
@@ -390,43 +382,52 @@ public class ConfirmationLetterGenerator {
     }
   }
 
-  private void addAmountToSignedTotal(Record record, Map<String, BigDecimal> amounts) {
-    amounts.put(record.getSign(),
-        amounts.get(record.getSign()).add(record.getAmount()));
+  private void addAmountToSignedTotal(Record record, CreditDebitHolder amounts) {
+    amounts.addValue(record.getCurrency().getCurrencyType(), record.getSign(), record.getAmount());
   }
 
-  private void addAmountToSignedTotal(TempRecord record, Map<String, BigDecimal> amounts) {
-    amounts.put(record.getSign(),
-        amounts.get(record.getSign()).add(record.getAmount()));
+  private void addAmountToSignedTotal(TempRecord record, CreditDebitHolder amounts) {
+    amounts.addValue(getCurrencyByCode(record.getCurrencyCode()), record.getSign(), record.getAmount());
   }
 
-  private RetrievedAmountsHolder getHolderForRecord(Record record) {
-    return retrievedAmounts.get(getCurrencyByCode(record.getCurrency().getCode()));
-  }
+  class CreditDebitHolder {
 
-  private RetrievedAmountsHolder getHolderForRecord(TempRecord sansDupRec) {
-    return retrievedAmounts.get(getCurrencyByCode(sansDupRec.getCurrencyCode()));
-  }
-
-
-  class RetrievedAmountsHolder {
-    Map<String, BigDecimal> recordAmounts = new HashMap<String, BigDecimal>() {{
-      put(Constants.CREDIT, BigDecimal.ZERO);
-      put(Constants.DEBIT, BigDecimal.ZERO);
+    HashMap<String, BigDecimal> creditValues = new HashMap<String, BigDecimal>() {{
+      put(Constants.CURRENCY_FL, BigDecimal.ZERO);
+      put(Constants.CURRENCY_USD, BigDecimal.ZERO);
+      put(Constants.CURRENCY_EURO, BigDecimal.ZERO);
     }};
-    Map<String, BigDecimal> sansAmounts = new HashMap<String, BigDecimal>() {{
-      put(Constants.CREDIT, BigDecimal.ZERO);
-      put(Constants.DEBIT, BigDecimal.ZERO);
-    }};
-    Map<String, BigDecimal> faultyAccRecordAmounts = new HashMap<String, BigDecimal>() {{
-      put(Constants.CREDIT, BigDecimal.ZERO);
-      put(Constants.DEBIT, BigDecimal.ZERO);
-    }};
-    Map<String, BigDecimal> totals = new HashMap<String, BigDecimal>() {{
-      put(Constants.CREDIT, BigDecimal.ZERO);
-      put(Constants.DEBIT, BigDecimal.ZERO);
+    HashMap<String, BigDecimal> debitValues = new HashMap<String, BigDecimal>() {{
+      put(Constants.CURRENCY_FL, BigDecimal.ZERO);
+      put(Constants.CURRENCY_USD, BigDecimal.ZERO);
+      put(Constants.CURRENCY_EURO, BigDecimal.ZERO);
     }};
 
-    BigDecimal recordAmount = BigDecimal.ZERO;
+    public BigDecimal getValue(String sign, String currency) {
+      BigDecimal value = creditValues.get(currency);
+      if (Constants.DEBIT.equals(sign)) {
+        value = debitValues.get(currency);
+      }
+      if (value == null) {
+        value = BigDecimal.ZERO;
+      }
+      return value;
+    }
+
+    public void setValue(String currency, String sign, BigDecimal value) {
+      if (Constants.DEBIT.equals(sign)) {
+        debitValues.put(currency, value);
+      } else {
+        creditValues.put(currency, value);
+      }
+    }
+
+    public void addValue(String currency, String sign, BigDecimal value) {
+      if (Constants.DEBIT.equals(sign)) {
+        debitValues.put(currency, debitValues.get(currency).add(value));
+      } else {
+        creditValues.put(currency, creditValues.get(currency).add(value));
+      }
+    }
   }
 }
