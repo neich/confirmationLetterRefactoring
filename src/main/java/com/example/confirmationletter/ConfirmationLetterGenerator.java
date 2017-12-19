@@ -429,8 +429,8 @@ public class ConfirmationLetterGenerator {
     BigDecimal amountSansCredit = BigDecimal.ZERO;
     BigDecimal totalDebit = BigDecimal.ZERO;
     BigDecimal totalCredit = BigDecimal.ZERO;
-    BigDecimal faultyAccRecordAmountDebit;
-    BigDecimal faultyAccRecordAmountCredit;
-    BigDecimal recordAmount;
+    BigDecimal faultyAccRecordAmountDebit = BigDecimal.ZERO;
+    BigDecimal faultyAccRecordAmountCredit = BigDecimal.ZERO;
+    BigDecimal recordAmount = BigDecimal.ZERO;
   }
 }
