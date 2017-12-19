@@ -102,51 +102,6 @@ public class ConfirmationLetterGenerator {
     return letter;
   }
 
-  private String getTransactionCost(FileUploadCommand fileUploadCommand, HashBatchRecordsBalance hashBatchRecordsBalance) {
-    String transactionCost = "";
-    if (fileUploadCommand.hasFee()) {
-      transactionCost = hashBatchRecordsBalance.getTotalFee().toString();
-    }
-    return transactionCost;
-  }
-
-  // Calculate sum amount from faultyAccountnumber list
-
-  private void calculateAmountsFaultyAccountNumber(
-      List<TempRecord> faultyAccountNumberRecordList, Map<String, RetrievedAmountsHolder> retrievedAmounts, Client client) {
-
-    for (TempRecord faultyAccountNumberRecord : faultyAccountNumberRecordList) {
-      // // logger.debug("faultyAccountNumberRecord: "+
-      // faultyAccountNumberRecord);
-      // FL
-      setTempRecordSignToClientSignIfUnset(client, faultyAccountNumberRecord);
-      setTempRecordCurrencyCodeToClientIfUnset(client, faultyAccountNumberRecord);
-
-      RetrievedAmountsHolder holder = retrievedAmounts.get(
-          getCurrencyByCode(faultyAccountNumberRecord.getCurrencycode()));
-
-      if (faultyAccountNumberRecord.isDebitRecord()) {
-        holder.faultyAccRecordAmountDebit = holder.faultyAccRecordAmountDebit.add(
-            new BigDecimal(faultyAccountNumberRecord.getAmount()));
-      }
-      if (faultyAccountNumberRecord.isCreditRecord()) {
-        holder.faultyAccRecordAmountCredit = holder.faultyAccRecordAmountCredit.add(
-            new BigDecimal(faultyAccountNumberRecord.getAmount()));
-      }
-
-    }
-  }
-
-  private void setTempRecordCurrencyCodeToClientIfUnset(Client client, TempRecord faultyAccountNumberRecord) {
-    if (faultyAccountNumberRecord.getCurrencycode() == null) {
-      String currencyId = currencyDao.retrieveCurrencyDefault(client
-          .getProfile());
-      Currency currency = currencyDao
-          .retrieveCurrencyOnId(new Integer(currencyId));
-      faultyAccountNumberRecord.setCurrencycode(currency.getCode());
-    }
-  }
-
   private Map<String, RetrievedAmountsHolder> calculateRetrievedAmounts(
       List<Record> records,
       List<FaultRecord> faultyRecords,
@@ -173,50 +128,11 @@ public class ConfirmationLetterGenerator {
     return retrievedAmounts;
   }
 
-  private void calculateOverallTotalsForAllCurrencies(Map<String, RetrievedAmountsHolder> retrievedAmounts) {
-    for (RetrievedAmountsHolder holder : retrievedAmounts.values()) {
-      calculateTotal(holder);
-    }
-  }
-
-  private void calculateTotal(RetrievedAmountsHolder holder) {
-    holder.totalDebit = holder.recordAmountDebit.add(holder.amountSansDebit)
-        .subtract(holder.faultyAccRecordAmountDebit);
-    holder.totalCredit = holder.recordAmountCredit.add(holder.amountSansCredit)
-        .subtract(holder.faultyAccRecordAmountCredit);
-
-    holder.recordAmount = holder.totalCredit.subtract(holder.totalDebit).abs();
-  }
-
-  private void calculateTotalsForSansDuplicateFaultRecords(Client client, List<TempRecord> sansDuplicateFaultRecordsList, Map<String, RetrievedAmountsHolder> holders) {
-    for (TempRecord sansDupRec : sansDuplicateFaultRecordsList) {
-      setTempRecordSignToClientSignIfUnset(client, sansDupRec);
-
-      Integer currencyCode = sansDupRec.getCurrencycode();
-
-      if (currencyCode == null) {
-        String currencyId = currencyDao
-            .retrieveCurrencyDefault(client.getProfile());
-        Currency currency = currencyDao
-            .retrieveCurrencyOnId(new Integer(currencyId));
-        sansDupRec.setCurrencycode(currency.getCode());
+  private void calculateTotalsForBalancedRecords(List<Record> records, Map<String, RetrievedAmountsHolder> retrievedAmounts) {
+    for (Record record : records) {
+      if (record.isCounterTransferRecord() && record.isDebitRecord()) {
+        addAmountToTotal(retrievedAmounts, record);
       }
-
-      String currencyISOCode = getCurrencyByCode(currencyCode);
-      RetrievedAmountsHolder holder = holders.get(currencyISOCode);
-
-      if (sansDupRec.isDebitRecord())
-        holder.amountSansDebit.add(BigDecimal.valueOf(sansDupRec.getAmount()));
-
-      if (sansDupRec.isCreditRecord())
-        holder.amountSansCredit.add(BigDecimal.valueOf(sansDupRec.getAmount()));
-    }
-  }
-
-  private void setTempRecordSignToClientSignIfUnset(Client client, TempRecord sansDupRec) {
-    if (sansDupRec.getSign() == null) {
-      String sign = client.getCreditDebit();
-      sansDupRec.setSign(sign);
     }
   }
 
@@ -237,11 +153,80 @@ public class ConfirmationLetterGenerator {
     }
   }
 
-  private void calculateTotalsForBalancedRecords(List<Record> records, Map<String, RetrievedAmountsHolder> retrievedAmounts) {
-    for (Record record : records) {
-      if (record.isCounterTransferRecord() && record.isDebitRecord()) {
-        addAmountToTotal(retrievedAmounts, record);
+  private void calculateTotalsForSansDuplicateFaultRecords(Client client, List<TempRecord> sansDuplicateFaultRecordsList, Map<String, RetrievedAmountsHolder> retrievedAmounts) {
+    for (TempRecord sansDupRec : sansDuplicateFaultRecordsList) {
+      setTempRecordSignToClientSignIfUnset(client, sansDupRec);
+      setTempRecordCurrencyCodeToClientIfUnset(client, sansDupRec);
+
+      RetrievedAmountsHolder holder = retrievedAmounts.get(getCurrencyByCode(sansDupRec.getCurrencycode()));
+
+      if (sansDupRec.isDebitRecord())
+        holder.amountSansDebit.add(BigDecimal.valueOf(sansDupRec.getAmount()));
+
+      if (sansDupRec.isCreditRecord())
+        holder.amountSansCredit.add(BigDecimal.valueOf(sansDupRec.getAmount()));
+    }
+  }
+
+  private void calculateAmountsFaultyAccountNumber(
+      List<TempRecord> faultyAccountNumberRecordList, Map<String, RetrievedAmountsHolder> retrievedAmounts, Client client) {
+
+    for (TempRecord faultyAccountNumberRecord : faultyAccountNumberRecordList) {
+      setTempRecordSignToClientSignIfUnset(client, faultyAccountNumberRecord);
+      setTempRecordCurrencyCodeToClientIfUnset(client, faultyAccountNumberRecord);
+
+      RetrievedAmountsHolder holder = retrievedAmounts.get(
+          getCurrencyByCode(faultyAccountNumberRecord.getCurrencycode()));
+
+      if (faultyAccountNumberRecord.isDebitRecord()) {
+        holder.faultyAccRecordAmountDebit = holder.faultyAccRecordAmountDebit.add(
+            new BigDecimal(faultyAccountNumberRecord.getAmount()));
       }
+      if (faultyAccountNumberRecord.isCreditRecord()) {
+        holder.faultyAccRecordAmountCredit = holder.faultyAccRecordAmountCredit.add(
+            new BigDecimal(faultyAccountNumberRecord.getAmount()));
+      }
+
+    }
+  }
+
+  private void calculateOverallTotalsForAllCurrencies(Map<String, RetrievedAmountsHolder> retrievedAmounts) {
+    for (RetrievedAmountsHolder holder : retrievedAmounts.values()) {
+      calculateTotal(holder);
+    }
+  }
+
+  private String getTransactionCost(FileUploadCommand fileUploadCommand, HashBatchRecordsBalance hashBatchRecordsBalance) {
+    String transactionCost = "";
+    if (fileUploadCommand.hasFee()) {
+      transactionCost = hashBatchRecordsBalance.getTotalFee().toString();
+    }
+    return transactionCost;
+  }
+
+  private void setTempRecordCurrencyCodeToClientIfUnset(Client client, TempRecord faultyAccountNumberRecord) {
+    if (faultyAccountNumberRecord.getCurrencycode() == null) {
+      String currencyId = currencyDao.retrieveCurrencyDefault(client
+          .getProfile());
+      Currency currency = currencyDao
+          .retrieveCurrencyOnId(new Integer(currencyId));
+      faultyAccountNumberRecord.setCurrencycode(currency.getCode());
+    }
+  }
+
+  private void calculateTotal(RetrievedAmountsHolder holder) {
+    holder.totalDebit = holder.recordAmountDebit.add(holder.amountSansDebit)
+        .subtract(holder.faultyAccRecordAmountDebit);
+    holder.totalCredit = holder.recordAmountCredit.add(holder.amountSansCredit)
+        .subtract(holder.faultyAccRecordAmountCredit);
+
+    holder.recordAmount = holder.totalCredit.subtract(holder.totalDebit).abs();
+  }
+
+  private void setTempRecordSignToClientSignIfUnset(Client client, TempRecord sansDupRec) {
+    if (sansDupRec.getSign() == null) {
+      String sign = client.getCreditDebit();
+      sansDupRec.setSign(sign);
     }
   }
 
