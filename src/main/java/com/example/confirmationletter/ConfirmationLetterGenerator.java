@@ -1,6 +1,5 @@
 package com.example.confirmationletter;
 
-import com.example.confirmationletter.dao.CurrencyDao;
 import com.example.confirmationletter.domain.*;
 import com.example.confirmationletter.record.command.FileUploadCommand;
 import com.example.confirmationletter.record.domain.FaultRecord;
@@ -27,7 +26,6 @@ public class ConfirmationLetterGenerator {
   private String credit;
   private String type;
   private LetterSelector letterSelector;
-  private CurrencyDao currencyDao;
 
   HashMap<String, BigDecimal> recordAmount = new HashMap<String, BigDecimal>() {{
     put(Constants.CURRENCY_FL, BigDecimal.ZERO);
@@ -39,14 +37,6 @@ public class ConfirmationLetterGenerator {
   CreditDebitHolder sansAmounts = new CreditDebitHolder();
   CreditDebitHolder totalAmounts = new CreditDebitHolder();
   CreditDebitHolder faultyAccountRecordAmounts = new CreditDebitHolder();
-
-  public CurrencyDao getCurrencyDao() {
-    return currencyDao;
-  }
-
-  public void setCurrencyDao(CurrencyDao currencyDao) {
-    this.currencyDao = currencyDao;
-  }
 
   public OurOwnByteArrayOutputStream letter(RequestContext context,
                                             FileUploadCommand fileUploadCommand, Client client,
