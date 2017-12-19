@@ -112,17 +112,8 @@ public class ConfirmationLetterGenerator {
 
   // Calculate sum amount from faultyAccountnumber list
 
-  private Map<String, BigDecimal> calculateAmountsFaultyAccountNumber(
-      List<TempRecord> faultyAccountNumberRecordList, Client client) {
-    Map<String, BigDecimal> retrievedAmountsFaultyAccountNumber = new HashMap<String, BigDecimal>();
-
-    BigDecimal faultyAccRecordAmountCreditFL = BigDecimal.ZERO;
-    BigDecimal faultyAccRecordAmountCreditUSD = BigDecimal.ZERO;
-    BigDecimal faultyAccRecordAmountCreditEUR = BigDecimal.ZERO;
-
-    BigDecimal faultyAccRecordAmountDebitFL = BigDecimal.ZERO;
-    BigDecimal faultyAccRecordAmountDebitUSD = BigDecimal.ZERO;
-    BigDecimal faultyAccRecordAmountDebitEUR = BigDecimal.ZERO;
+  private void calculateAmountsFaultyAccountNumber(
+      List<TempRecord> faultyAccountNumberRecordList, Map<String, RetrievedAmountsHolder> retrievedAmounts, Client client) {
 
     for (TempRecord faultyAccountNumberRecord : faultyAccountNumberRecordList) {
       // // logger.debug("faultyAccountNumberRecord: "+
@@ -131,65 +122,19 @@ public class ConfirmationLetterGenerator {
       setTempRecordSignToClientSignIfUnset(client, faultyAccountNumberRecord);
       setTempRecordCurrencyCodeToClientIfUnset(client, faultyAccountNumberRecord);
 
-      if (faultyAccountNumberRecord.getCurrencycode().equals(
-          Constants.FL_CURRENCY_CODE)
-          || faultyAccountNumberRecord.getCurrencycode().equals(
-          Constants.FL_CURRENCY_CODE_FOR_WEIRD_BANK)) {
+      RetrievedAmountsHolder holder = retrievedAmounts.get(
+          getCurrencyByCode(faultyAccountNumberRecord.getCurrencycode()));
 
-        if (faultyAccountNumberRecord.getSign().equalsIgnoreCase(
-            Constants.DEBIT)) {
-          faultyAccRecordAmountDebitFL = new BigDecimal(
-              faultyAccountNumberRecord.getAmount())
-              .add(faultyAccRecordAmountDebitFL);
-        } else {
-          faultyAccRecordAmountCreditFL = new BigDecimal(
-              faultyAccountNumberRecord.getAmount())
-              .add(faultyAccRecordAmountCreditFL);
-        }
+      if (faultyAccountNumberRecord.isDebitRecord()) {
+        holder.faultyAccRecordAmountDebit = holder.faultyAccRecordAmountDebit.add(
+            new BigDecimal(faultyAccountNumberRecord.getAmount()));
       }
-      if (faultyAccountNumberRecord.getCurrencycode().equals(
-          Constants.USD_CURRENCY_CODE)) {
-        if (faultyAccountNumberRecord.getSign().equalsIgnoreCase(
-            Constants.DEBIT)) {
-          faultyAccRecordAmountDebitUSD = new BigDecimal(
-              faultyAccountNumberRecord.getAmount())
-              .add(faultyAccRecordAmountDebitUSD);
-        } else {
-          faultyAccRecordAmountCreditUSD = new BigDecimal(
-              faultyAccountNumberRecord.getAmount())
-              .add(faultyAccRecordAmountCreditUSD);
-        }
+      if (faultyAccountNumberRecord.isCreditRecord()) {
+        holder.faultyAccRecordAmountCredit = holder.faultyAccRecordAmountCredit.add(
+            new BigDecimal(faultyAccountNumberRecord.getAmount()));
       }
-      if (faultyAccountNumberRecord.getCurrencycode().equals(
-          Constants.EUR_CURRENCY_CODE)) {
-        if (faultyAccountNumberRecord.getSign().equalsIgnoreCase(
-            Constants.DEBIT)) {
-          faultyAccRecordAmountDebitEUR = new BigDecimal(
-              faultyAccountNumberRecord.getAmount())
-              .add(faultyAccRecordAmountDebitEUR);
-        } else {
-          faultyAccRecordAmountCreditEUR = new BigDecimal(
-              faultyAccountNumberRecord.getAmount())
-              .add(faultyAccRecordAmountCreditEUR);
-        }
-      }
-
-      retrievedAmountsFaultyAccountNumber.put("FaultyAccDebitFL",
-          faultyAccRecordAmountDebitFL);
-      retrievedAmountsFaultyAccountNumber.put("FaultyAccDebitUSD",
-          faultyAccRecordAmountDebitUSD);
-      retrievedAmountsFaultyAccountNumber.put("FaultyAccDebitEUR",
-          faultyAccRecordAmountDebitEUR);
-
-      retrievedAmountsFaultyAccountNumber.put("FaultyAccCreditFL",
-          faultyAccRecordAmountCreditFL);
-      retrievedAmountsFaultyAccountNumber.put("FaultyAccCreditUSD",
-          faultyAccRecordAmountCreditUSD);
-      retrievedAmountsFaultyAccountNumber.put("FaultyAccCreditEUR",
-          faultyAccRecordAmountCreditEUR);
 
     }
-    return retrievedAmountsFaultyAccountNumber;
   }
 
   private void setTempRecordCurrencyCodeToClientIfUnset(Client client, TempRecord faultyAccountNumberRecord) {
@@ -211,30 +156,6 @@ public class ConfirmationLetterGenerator {
 
     Map<String, BigDecimal> retrievedAmounts = new HashMap<String, BigDecimal>();
 
-    BigDecimal recordAmountDebitFL = BigDecimal.ZERO;
-    BigDecimal recordAmountDebitEUR = BigDecimal.ZERO;
-    BigDecimal recordAmountDebitUSD = BigDecimal.ZERO;
-
-    BigDecimal recordAmountCreditFL = BigDecimal.ZERO;
-    BigDecimal recordAmountCreditEUR = BigDecimal.ZERO;
-    BigDecimal recordAmountCreditUSD = BigDecimal.ZERO;
-
-    BigDecimal amountSansDebitFL = BigDecimal.ZERO;
-    BigDecimal amountSansDebitUSD = BigDecimal.ZERO;
-    BigDecimal amountSansDebitEUR = BigDecimal.ZERO;
-
-    BigDecimal amountSansCreditFL = BigDecimal.ZERO;
-    BigDecimal amountSansCreditUSD = BigDecimal.ZERO;
-    BigDecimal amountSansCreditEUR = BigDecimal.ZERO;
-
-    BigDecimal totalDebitFL = BigDecimal.ZERO;
-    BigDecimal totalDebitUSD = BigDecimal.ZERO;
-    BigDecimal totalDebitEUR = BigDecimal.ZERO;
-
-    BigDecimal totalCreditFL = BigDecimal.ZERO;
-    BigDecimal totalCreditUSD = BigDecimal.ZERO;
-    BigDecimal totalCreditEUR = BigDecimal.ZERO;
-
     if (client.isBalanced()) {
       calculateTotalsForBalancedRecords(records, retrievedAmounts);
     } else {
@@ -249,18 +170,17 @@ public class ConfirmationLetterGenerator {
       // Sansduplicate
       calculateTotalsForSansDuplicateFaultRecords(client, sansDuplicateFaultRecordsList, holders);
 
-      Map<String, BigDecimal> retrievedAccountNumberAmounts = calculateAmountsFaultyAccountNumber(
-          faultyAccountNumberRecordList, client);
+      calculateAmountsFaultyAccountNumber(faultyAccountNumberRecordList, holders, client);
 
       BigDecimal recordAmountFL = calculateTotals(holders.get(Constants.CURRENCY_FL),
-          retrievedAccountNumberAmounts.get("FaultyAccDebitFL"),
-          retrievedAccountNumberAmounts.get("FaultyAccCreditFL"));
+          holders.get(Constants.CURRENCY_FL).faultyAccRecordAmountDebit,
+          holders.get(Constants.CURRENCY_FL).faultyAccRecordAmountCredit);
       BigDecimal recordAmountUSD = calculateTotals(holders.get(Constants.CURRENCY_USD),
-          retrievedAccountNumberAmounts.get("FaultyAccDebitUSD"),
-          retrievedAccountNumberAmounts.get("FaultyAccCreditUSD"));
+          holders.get(Constants.CURRENCY_USD).faultyAccRecordAmountDebit,
+          holders.get(Constants.CURRENCY_USD).faultyAccRecordAmountCredit);
       BigDecimal recordAmountEUR = calculateTotals(holders.get(Constants.CURRENCY_EURO),
-          retrievedAccountNumberAmounts.get("FaultyAccDebitEUR"),
-          retrievedAccountNumberAmounts.get("FaultyAccCreditEUR"));
+          holders.get(Constants.CURRENCY_EURO).faultyAccRecordAmountDebit,
+          holders.get(Constants.CURRENCY_EURO).faultyAccRecordAmountCredit);
 
       retrievedAmounts.put(Constants.CURRENCY_EURO, recordAmountEUR);
       retrievedAmounts.put(Constants.CURRENCY_USD, recordAmountUSD);
@@ -271,8 +191,8 @@ public class ConfirmationLetterGenerator {
   }
 
   private BigDecimal calculateTotals(RetrievedAmountsHolder holder,
-                               BigDecimal faultyAccountDebitAmount,
-                               BigDecimal faultyAccountCreditAmount) {
+                                     BigDecimal faultyAccountDebitAmount,
+                                     BigDecimal faultyAccountCreditAmount) {
     holder.totalDebit = holder.recordAmountDebit.add(holder.amountSansDebit)
         .subtract(faultyAccountDebitAmount);
     holder.totalCredit = holder.recordAmountCredit.add(holder.amountSansCredit)
@@ -474,10 +394,10 @@ public class ConfirmationLetterGenerator {
     return list;
   }
 
-	/*
+  /*
    *
-	 * Getters and setters
-	 */
+   * Getters and setters
+   */
 
   public void setCrediting(String crediting) {
     this.crediting = crediting;
@@ -520,5 +440,7 @@ public class ConfirmationLetterGenerator {
     BigDecimal amountSansCredit = BigDecimal.ZERO;
     BigDecimal totalDebit = BigDecimal.ZERO;
     BigDecimal totalCredit = BigDecimal.ZERO;
+    BigDecimal faultyAccRecordAmountDebit;
+    BigDecimal faultyAccRecordAmountCredit;
   }
 }
