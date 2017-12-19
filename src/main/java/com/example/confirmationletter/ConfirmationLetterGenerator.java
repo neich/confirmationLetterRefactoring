@@ -152,7 +152,7 @@ public class ConfirmationLetterGenerator {
       setTempRecordSignToClientSignIfUnset(client, sansDupRec);
       setTempRecordCurrencyCodeToClientIfUnset(client, sansDupRec);
 
-      RetrievedAmountsHolder holder = retrievedAmounts.get(getCurrencyByCode(sansDupRec.getCurrencycode()));
+      RetrievedAmountsHolder holder = getHolderForRecord(sansDupRec, retrievedAmounts);
 
       addAmountToSignedTotal(sansDupRec, holder.sansAmounts);
 
@@ -166,8 +166,7 @@ public class ConfirmationLetterGenerator {
       setTempRecordSignToClientSignIfUnset(client, faultyAccountNumberRecord);
       setTempRecordCurrencyCodeToClientIfUnset(client, faultyAccountNumberRecord);
 
-      RetrievedAmountsHolder holder = retrievedAmounts.get(
-          getCurrencyByCode(faultyAccountNumberRecord.getCurrencycode()));
+      RetrievedAmountsHolder holder = getHolderForRecord(faultyAccountNumberRecord, retrievedAmounts);
 
       addAmountToSignedTotal(faultyAccountNumberRecord, holder.faultyAccRecordAmounts);
     }
@@ -401,6 +400,11 @@ public class ConfirmationLetterGenerator {
   private RetrievedAmountsHolder getHolderForRecord(Record record, Map<String, RetrievedAmountsHolder> holders) {
     return holders.get(getCurrencyByCode(record.getCurrency().getCode()));
   }
+
+  private RetrievedAmountsHolder getHolderForRecord(TempRecord sansDupRec, Map<String, RetrievedAmountsHolder> retrievedAmounts) {
+    return retrievedAmounts.get(getCurrencyByCode(sansDupRec.getCurrencycode()));
+  }
+
 
   class RetrievedAmountsHolder {
     Map<String, BigDecimal> recordAmounts = new HashMap<String, BigDecimal>() {{
