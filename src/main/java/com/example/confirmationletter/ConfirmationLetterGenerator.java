@@ -123,8 +123,8 @@ public class ConfirmationLetterGenerator {
     } else {
 
       calculateTotalsForCounterBalancedRecords(records);
-      calculateTotalsForSansDuplicateFaultRecords(client, sansDuplicateFaultRecordsList);
-      calculateAmountsFaultyAccountNumber(faultyAccountNumberRecordList, client);
+      calculateTotalOverTempRecords(sansDuplicateFaultRecordsList, sansAmounts,client);
+      calculateTotalOverTempRecords(faultyAccountNumberRecordList, faultyAccountRecordAmounts, client);
       calculateOverallTotalsForAllCurrencies();
     }
   }
@@ -147,24 +147,13 @@ public class ConfirmationLetterGenerator {
     }
   }
 
-  private void calculateTotalsForSansDuplicateFaultRecords(Client client, List<TempRecord> sansDuplicateFaultRecordsList) {
-    for (TempRecord sansDupRec : sansDuplicateFaultRecordsList) {
-      setTempRecordSignToClientSignIfUnset(client, sansDupRec);
-      setTempRecordCurrencyCodeToClientIfUnset(client, sansDupRec);
-
-      addAmountToSignedTotal(sansDupRec, sansAmounts);
-
-    }
-  }
-
-  private void calculateAmountsFaultyAccountNumber(
-      List<TempRecord> faultyAccountNumberRecordList, Client client) {
+  private void calculateTotalOverTempRecords(List<TempRecord> faultyAccountNumberRecordList, CreditDebitHolder amountsHolder, Client client) {
 
     for (TempRecord faultyAccountNumberRecord : faultyAccountNumberRecordList) {
       setTempRecordSignToClientSignIfUnset(client, faultyAccountNumberRecord);
       setTempRecordCurrencyCodeToClientIfUnset(client, faultyAccountNumberRecord);
 
-      addAmountToSignedTotal(faultyAccountNumberRecord, faultyAccountRecordAmounts);
+      addAmountToSignedTotal(faultyAccountNumberRecord, amountsHolder);
     }
   }
 
