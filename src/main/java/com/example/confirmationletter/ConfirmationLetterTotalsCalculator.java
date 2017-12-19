@@ -24,10 +24,16 @@ public class ConfirmationLetterTotalsCalculator {
   CreditDebitHolder totalAmounts = new CreditDebitHolder();
   CreditDebitHolder faultyAccountRecordAmounts = new CreditDebitHolder();
 
+  Client client;
+
+  public ConfirmationLetterTotalsCalculator(Client client) {
+    this.client = client;
+  }
+
   public void calculateRetrievedAmounts(
       List<Record> records,
       List<FaultRecord> faultyRecords,
-      Client client, FileExtension extension,
+      FileExtension extension,
       List<TempRecord> faultyAccountNumberRecordList,
       List<TempRecord> sansDuplicateFaultRecordsList) {
 
@@ -36,8 +42,8 @@ public class ConfirmationLetterTotalsCalculator {
     } else {
 
       calculateTotalsForCounterBalancedRecords(records);
-      calculateTotalOverTempRecords(sansDuplicateFaultRecordsList, sansAmounts,client);
-      calculateTotalOverTempRecords(faultyAccountNumberRecordList, faultyAccountRecordAmounts, client);
+      calculateTotalOverTempRecords(sansDuplicateFaultRecordsList, sansAmounts);
+      calculateTotalOverTempRecords(faultyAccountNumberRecordList, faultyAccountRecordAmounts);
       calculateOverallTotalsForAllCurrencies();
     }
   }
@@ -59,11 +65,11 @@ public class ConfirmationLetterTotalsCalculator {
     }
   }
 
-  private void calculateTotalOverTempRecords(List<TempRecord> faultyAccountNumberRecordList, CreditDebitHolder amountsHolder, Client client) {
+  private void calculateTotalOverTempRecords(List<TempRecord> faultyAccountNumberRecordList, CreditDebitHolder amountsHolder) {
 
     for (TempRecord faultyAccountNumberRecord : faultyAccountNumberRecordList) {
-      setTempRecordSignToClientSignIfUnset(client, faultyAccountNumberRecord);
-      setTempRecordCurrencyCodeToClientIfUnset(client, faultyAccountNumberRecord);
+      setTempRecordSignToClientSignIfUnset(faultyAccountNumberRecord);
+      setTempRecordCurrencyCodeToClientIfUnset(faultyAccountNumberRecord);
 
       addAmountToSignedTotal(faultyAccountNumberRecord, amountsHolder);
     }
@@ -75,7 +81,7 @@ public class ConfirmationLetterTotalsCalculator {
     }
   }
 
-  private void setTempRecordCurrencyCodeToClientIfUnset(Client client, TempRecord faultyAccountNumberRecord) {
+  private void setTempRecordCurrencyCodeToClientIfUnset(TempRecord faultyAccountNumberRecord) {
     if (faultyAccountNumberRecord.getCurrencyCode() == null) {
       Currency currency = Util.getInstance().getDefaultCurrencyForClient(client);
       faultyAccountNumberRecord.setCurrencycode(currency.getCode());
@@ -89,7 +95,7 @@ public class ConfirmationLetterTotalsCalculator {
     recordAmount.put(currency, totalAmounts.getValue(currency, Constants.CREDIT).subtract(totalAmounts.getValue(currency, Constants.DEBIT)));
   }
 
-  private void setTempRecordSignToClientSignIfUnset(Client client, TempRecord sansDupRec) {
+  private void setTempRecordSignToClientSignIfUnset(TempRecord sansDupRec) {
     if (sansDupRec.getSign() == null) {
       String sign = client.getCreditDebit();
       sansDupRec.setSign(sign);

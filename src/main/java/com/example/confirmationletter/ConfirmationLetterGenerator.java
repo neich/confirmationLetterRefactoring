@@ -74,9 +74,9 @@ public class ConfirmationLetterGenerator {
 
     letter.setTransferType(hashBatchRecordsBalance.getCollectionType());
 
-    ConfirmationLetterTotalsCalculator calculator = new ConfirmationLetterTotalsCalculator();
+    ConfirmationLetterTotalsCalculator calculator = new ConfirmationLetterTotalsCalculator(client);
     calculator.calculateRetrievedAmounts(records, faultyRecords,
-        client, extension, faultyAccountNumberRecordList,
+        extension, faultyAccountNumberRecordList,
         sansDuplicateFaultRecordsList);
 
     letter.setRetrievedAmountEur(calculator.getRecordAmount(Constants.CURRENCY_EURO));
@@ -93,7 +93,6 @@ public class ConfirmationLetterGenerator {
     }
     return transactionCost;
   }
-
 
   /*
    *
