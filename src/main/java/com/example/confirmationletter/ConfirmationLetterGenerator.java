@@ -165,38 +165,27 @@ public class ConfirmationLetterGenerator {
     } else {
 
       calculateTotalsForCounterBalancedRecords(records, retrievedAmounts);
-
-      // Sansduplicate
       calculateTotalsForSansDuplicateFaultRecords(client, sansDuplicateFaultRecordsList, retrievedAmounts);
-
       calculateAmountsFaultyAccountNumber(faultyAccountNumberRecordList, retrievedAmounts, client);
-
-      BigDecimal recordAmountFL = calculateTotals(retrievedAmounts.get(Constants.CURRENCY_FL),
-          retrievedAmounts.get(Constants.CURRENCY_FL).faultyAccRecordAmountDebit,
-          retrievedAmounts.get(Constants.CURRENCY_FL).faultyAccRecordAmountCredit);
-      BigDecimal recordAmountUSD = calculateTotals(retrievedAmounts.get(Constants.CURRENCY_USD),
-          retrievedAmounts.get(Constants.CURRENCY_USD).faultyAccRecordAmountDebit,
-          retrievedAmounts.get(Constants.CURRENCY_USD).faultyAccRecordAmountCredit);
-      BigDecimal recordAmountEUR = calculateTotals(retrievedAmounts.get(Constants.CURRENCY_EURO),
-          retrievedAmounts.get(Constants.CURRENCY_EURO).faultyAccRecordAmountDebit,
-          retrievedAmounts.get(Constants.CURRENCY_EURO).faultyAccRecordAmountCredit);
-
-      retrievedAmounts.get(Constants.CURRENCY_FL).recordAmount = recordAmountFL;
-      retrievedAmounts.get(Constants.CURRENCY_USD).recordAmount = recordAmountUSD;
-      retrievedAmounts.get(Constants.CURRENCY_EURO).recordAmount = recordAmountEUR;
+      calculateOverallTotalsForAllCurrencies(retrievedAmounts);
     }
 
     return retrievedAmounts;
   }
 
-  private BigDecimal calculateTotals(RetrievedAmountsHolder holder,
-                                     BigDecimal faultyAccountDebitAmount,
-                                     BigDecimal faultyAccountCreditAmount) {
+  private void calculateOverallTotalsForAllCurrencies(Map<String, RetrievedAmountsHolder> retrievedAmounts) {
+    for (RetrievedAmountsHolder holder : retrievedAmounts.values()) {
+      calculateTotal(holder);
+    }
+  }
+
+  private void calculateTotal(RetrievedAmountsHolder holder) {
     holder.totalDebit = holder.recordAmountDebit.add(holder.amountSansDebit)
-        .subtract(faultyAccountDebitAmount);
+        .subtract(holder.faultyAccRecordAmountDebit);
     holder.totalCredit = holder.recordAmountCredit.add(holder.amountSansCredit)
-        .subtract(faultyAccountCreditAmount);
-    return holder.totalCredit.subtract(holder.totalDebit).abs();
+        .subtract(holder.faultyAccRecordAmountCredit);
+
+    holder.recordAmount = holder.totalCredit.subtract(holder.totalDebit).abs();
   }
 
   private void calculateTotalsForSansDuplicateFaultRecords(Client client, List<TempRecord> sansDuplicateFaultRecordsList, Map<String, RetrievedAmountsHolder> holders) {
