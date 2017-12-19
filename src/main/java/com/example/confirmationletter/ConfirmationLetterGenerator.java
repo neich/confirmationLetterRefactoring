@@ -142,12 +142,7 @@ public class ConfirmationLetterGenerator {
       if (!record.isCounterTransferRecord() && !record.hasFee()) {
         String currencyISOCode = getCurrencyByCode(record.getCurrency().getCode());
         RetrievedAmountsHolder holder = holders.get(currencyISOCode);
-
-        if (record.isDebitRecord())
-          holder.recordAmountDebit.add(record.getAmount());
-
-        if (record.isCreditRecord())
-          holder.recordAmountCredit.add(record.getAmount());
+        addAmountToSignedTotal(record, holder.recordAmounts);
       }
 
     }
@@ -215,9 +210,9 @@ public class ConfirmationLetterGenerator {
   }
 
   private void calculateTotal(RetrievedAmountsHolder holder) {
-    holder.totalDebit = holder.recordAmountDebit.add(holder.amountSansDebit)
+    holder.totalDebit = holder.recordAmounts.get(Constants.CREDIT).add(holder.amountSansDebit)
         .subtract(holder.faultyAccRecordAmountDebit);
-    holder.totalCredit = holder.recordAmountCredit.add(holder.amountSansCredit)
+    holder.totalCredit = holder.recordAmounts.get(Constants.DEBIT).add(holder.amountSansCredit)
         .subtract(holder.faultyAccRecordAmountCredit);
 
     holder.recordAmount = holder.totalCredit.subtract(holder.totalDebit).abs();
@@ -407,9 +402,16 @@ public class ConfirmationLetterGenerator {
     }
   }
 
+  private void addAmountToSignedTotal(Record record, Map<String, BigDecimal> amounts) {
+    amounts.put(record.getSign(),
+        amounts.get(record.getSign()).add(record.getAmount()));
+  }
+
   class RetrievedAmountsHolder {
-    BigDecimal recordAmountDebit = BigDecimal.ZERO;
-    BigDecimal recordAmountCredit = BigDecimal.ZERO;
+    Map<String, BigDecimal> recordAmounts = new HashMap<String, BigDecimal>() {{
+      put(Constants.CREDIT, BigDecimal.ZERO);
+      put(Constants.DEBIT, BigDecimal.ZERO);
+    }};
     BigDecimal amountSansDebit = BigDecimal.ZERO;
     BigDecimal amountSansCredit = BigDecimal.ZERO;
     BigDecimal totalDebit = BigDecimal.ZERO;
