@@ -140,12 +140,15 @@ public class ConfirmationLetterGenerator {
     for (Record record : records) {
       logger.debug("COUNTERTRANSFER [" + record.getIsCounterTransferRecord() + "] FEERECORD [" + record.getFeeRecord() + "]");
       if (!record.isCounterTransferRecord() && !record.hasFee()) {
-        String currencyISOCode = getCurrencyByCode(record.getCurrency().getCode());
-        RetrievedAmountsHolder holder = holders.get(currencyISOCode);
+        RetrievedAmountsHolder holder = getHolderForRecord(record, holders);
         addAmountToSignedTotal(record, holder.recordAmounts);
       }
 
     }
+  }
+
+  private RetrievedAmountsHolder getHolderForRecord(Record record, Map<String, RetrievedAmountsHolder> holders) {
+    return holders.get(getCurrencyByCode(record.getCurrency().getCode()));
   }
 
   private void calculateTotalsForSansDuplicateFaultRecords(Client client, List<TempRecord> sansDuplicateFaultRecordsList, Map<String, RetrievedAmountsHolder> retrievedAmounts) {
