@@ -28,6 +28,15 @@ public class ConfirmationLetterGenerator {
   private String type;
   private LetterSelector letterSelector;
   private CurrencyDao currencyDao;
+  private final Map<String, RetrievedAmountsHolder> retrievedAmounts;
+
+  public ConfirmationLetterGenerator() {
+    retrievedAmounts = new HashMap<String, RetrievedAmountsHolder>() {{
+      this.put(Constants.CURRENCY_FL, new RetrievedAmountsHolder());
+      this.put(Constants.CURRENCY_EURO, new RetrievedAmountsHolder());
+      this.put(Constants.CURRENCY_USD, new RetrievedAmountsHolder());
+    }};
+  }
 
   public CurrencyDao getCurrencyDao() {
     return currencyDao;
@@ -109,50 +118,44 @@ public class ConfirmationLetterGenerator {
       List<TempRecord> faultyAccountNumberRecordList,
       List<TempRecord> sansDuplicateFaultRecordsList) {
 
-    Map<String, RetrievedAmountsHolder> retrievedAmounts = new HashMap<String, RetrievedAmountsHolder>() {{
-      this.put(Constants.CURRENCY_FL, new RetrievedAmountsHolder());
-      this.put(Constants.CURRENCY_EURO, new RetrievedAmountsHolder());
-      this.put(Constants.CURRENCY_USD, new RetrievedAmountsHolder());
-    }};
-
     if (client.isBalanced()) {
-      calculateTotalsForBalancedRecords(records, retrievedAmounts);
+      calculateTotalsForBalancedRecords(records);
     } else {
 
-      calculateTotalsForCounterBalancedRecords(records, retrievedAmounts);
-      calculateTotalsForSansDuplicateFaultRecords(client, sansDuplicateFaultRecordsList, retrievedAmounts);
-      calculateAmountsFaultyAccountNumber(faultyAccountNumberRecordList, retrievedAmounts, client);
-      calculateOverallTotalsForAllCurrencies(retrievedAmounts);
+      calculateTotalsForCounterBalancedRecords(records);
+      calculateTotalsForSansDuplicateFaultRecords(client, sansDuplicateFaultRecordsList);
+      calculateAmountsFaultyAccountNumber(faultyAccountNumberRecordList, client);
+      calculateOverallTotalsForAllCurrencies();
     }
 
     return retrievedAmounts;
   }
 
-  private void calculateTotalsForBalancedRecords(List<Record> records, Map<String, RetrievedAmountsHolder> retrievedAmounts) {
+  private void calculateTotalsForBalancedRecords(List<Record> records) {
     for (Record record : records) {
       if (record.isCounterTransferRecord() && record.isDebitRecord()) {
-        addAmountToTotal(retrievedAmounts, record);
+        addAmountToTotal(record);
       }
     }
   }
 
-  private void calculateTotalsForCounterBalancedRecords(List<Record> records, Map<String, RetrievedAmountsHolder> holders) {
+  private void calculateTotalsForCounterBalancedRecords(List<Record> records) {
     for (Record record : records) {
       logger.debug("COUNTERTRANSFER [" + record.getIsCounterTransferRecord() + "] FEERECORD [" + record.getFeeRecord() + "]");
       if (!record.isCounterTransferRecord() && !record.hasFee()) {
-        RetrievedAmountsHolder holder = getHolderForRecord(record, holders);
+        RetrievedAmountsHolder holder = getHolderForRecord(record);
         addAmountToSignedTotal(record, holder.recordAmounts);
       }
 
     }
   }
 
-  private void calculateTotalsForSansDuplicateFaultRecords(Client client, List<TempRecord> sansDuplicateFaultRecordsList, Map<String, RetrievedAmountsHolder> retrievedAmounts) {
+  private void calculateTotalsForSansDuplicateFaultRecords(Client client, List<TempRecord> sansDuplicateFaultRecordsList) {
     for (TempRecord sansDupRec : sansDuplicateFaultRecordsList) {
       setTempRecordSignToClientSignIfUnset(client, sansDupRec);
       setTempRecordCurrencyCodeToClientIfUnset(client, sansDupRec);
 
-      RetrievedAmountsHolder holder = getHolderForRecord(sansDupRec, retrievedAmounts);
+      RetrievedAmountsHolder holder = getHolderForRecord(sansDupRec);
 
       addAmountToSignedTotal(sansDupRec, holder.sansAmounts);
 
@@ -160,19 +163,19 @@ public class ConfirmationLetterGenerator {
   }
 
   private void calculateAmountsFaultyAccountNumber(
-      List<TempRecord> faultyAccountNumberRecordList, Map<String, RetrievedAmountsHolder> retrievedAmounts, Client client) {
+      List<TempRecord> faultyAccountNumberRecordList, Client client) {
 
     for (TempRecord faultyAccountNumberRecord : faultyAccountNumberRecordList) {
       setTempRecordSignToClientSignIfUnset(client, faultyAccountNumberRecord);
       setTempRecordCurrencyCodeToClientIfUnset(client, faultyAccountNumberRecord);
 
-      RetrievedAmountsHolder holder = getHolderForRecord(faultyAccountNumberRecord, retrievedAmounts);
+      RetrievedAmountsHolder holder = getHolderForRecord(faultyAccountNumberRecord);
 
       addAmountToSignedTotal(faultyAccountNumberRecord, holder.faultyAccRecordAmounts);
     }
   }
 
-  private void calculateOverallTotalsForAllCurrencies(Map<String, RetrievedAmountsHolder> retrievedAmounts) {
+  private void calculateOverallTotalsForAllCurrencies() {
     for (RetrievedAmountsHolder holder : retrievedAmounts.values()) {
       calculateTotal(holder);
     }
@@ -187,7 +190,7 @@ public class ConfirmationLetterGenerator {
   }
 
   private void setTempRecordCurrencyCodeToClientIfUnset(Client client, TempRecord faultyAccountNumberRecord) {
-    if (faultyAccountNumberRecord.getCurrencycode() == null) {
+    if (faultyAccountNumberRecord.getCurrencyCode() == null) {
       String currencyId = currencyDao.retrieveCurrencyDefault(client
           .getProfile());
       Currency currency = currencyDao
@@ -210,7 +213,7 @@ public class ConfirmationLetterGenerator {
     }
   }
 
-  private void addAmountToTotal(Map<String, RetrievedAmountsHolder> retrievedAmounts, Record record) {
+  private void addAmountToTotal(Record record) {
     String currencyIsoCode = getCurrencyByCode(record.getCurrency().getCode());
     RetrievedAmountsHolder holder = retrievedAmounts.get(currencyIsoCode);
     BigDecimal previousValue = holder.recordAmount;
@@ -397,12 +400,12 @@ public class ConfirmationLetterGenerator {
         amounts.get(record.getSign()).add(record.getAmount()));
   }
 
-  private RetrievedAmountsHolder getHolderForRecord(Record record, Map<String, RetrievedAmountsHolder> holders) {
-    return holders.get(getCurrencyByCode(record.getCurrency().getCode()));
+  private RetrievedAmountsHolder getHolderForRecord(Record record) {
+    return retrievedAmounts.get(getCurrencyByCode(record.getCurrency().getCode()));
   }
 
-  private RetrievedAmountsHolder getHolderForRecord(TempRecord sansDupRec, Map<String, RetrievedAmountsHolder> retrievedAmounts) {
-    return retrievedAmounts.get(getCurrencyByCode(sansDupRec.getCurrencycode()));
+  private RetrievedAmountsHolder getHolderForRecord(TempRecord sansDupRec) {
+    return retrievedAmounts.get(getCurrencyByCode(sansDupRec.getCurrencyCode()));
   }
 
 

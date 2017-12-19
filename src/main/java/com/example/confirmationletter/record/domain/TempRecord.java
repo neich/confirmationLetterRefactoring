@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 
 public class TempRecord {
   private String sign;
-  private Integer currencycode;
+  private Integer currencyCode;
   private BigDecimal amount;
 
   public String getSign() {
@@ -17,16 +17,12 @@ public class TempRecord {
     this.sign = sign;
   }
 
-  public Integer getCurrencycode() {
-    return currencycode;
+  public Integer getCurrencyCode() {
+    return currencyCode;
   }
 
-  public boolean isCurrencycode() {
-    return true;
-  }
-
-  public void setCurrencycode(Integer currencycode) {
-    this.currencycode = currencycode;
+  public void setCurrencycode(Integer currencyCode) {
+    this.currencyCode = currencyCode;
   }
 
   public BigDecimal getAmount() {
@@ -43,5 +39,4 @@ public class TempRecord {
   public boolean isCreditRecord() {
     return this.getSign().equalsIgnoreCase(Constants.CREDIT);
   }
-
 }
