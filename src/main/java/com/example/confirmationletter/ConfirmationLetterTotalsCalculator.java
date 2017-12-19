@@ -132,22 +132,15 @@ public class ConfirmationLetterTotalsCalculator {
 
   class CreditDebitHolder {
 
-    HashMap<String, BigDecimal> creditValues = new HashMap<String, BigDecimal>() {{
-      put(Constants.CURRENCY_FL, BigDecimal.ZERO);
-      put(Constants.CURRENCY_USD, BigDecimal.ZERO);
-      put(Constants.CURRENCY_EURO, BigDecimal.ZERO);
-    }};
-    HashMap<String, BigDecimal> debitValues = new HashMap<String, BigDecimal>() {{
-      put(Constants.CURRENCY_FL, BigDecimal.ZERO);
-      put(Constants.CURRENCY_USD, BigDecimal.ZERO);
-      put(Constants.CURRENCY_EURO, BigDecimal.ZERO);
-    }};
+    HashMap<String, HashMap<String, BigDecimal>> values = new HashMap<>();
+
+    public CreditDebitHolder() {
+      values.put(Constants.DEBIT, new HashMap<String, BigDecimal>());
+      values.put(Constants.CREDIT, new HashMap<String, BigDecimal>());
+    }
 
     public BigDecimal getValue(String sign, String currency) {
-      BigDecimal value = creditValues.get(currency);
-      if (Constants.DEBIT.equals(sign)) {
-        value = debitValues.get(currency);
-      }
+      BigDecimal value = values.get(sign).get(currency);
       if (value == null) {
         value = BigDecimal.ZERO;
       }
@@ -155,19 +148,11 @@ public class ConfirmationLetterTotalsCalculator {
     }
 
     public void setValue(String currency, String sign, BigDecimal value) {
-      if (Constants.DEBIT.equals(sign)) {
-        debitValues.put(currency, value);
-      } else {
-        creditValues.put(currency, value);
-      }
+      values.get(sign).put(currency, value);
     }
 
     public void addValue(String currency, String sign, BigDecimal value) {
-      if (Constants.DEBIT.equals(sign)) {
-        debitValues.put(currency, debitValues.get(currency).add(value));
-      } else {
-        creditValues.put(currency, creditValues.get(currency).add(value));
-      }
+        values.get(sign).put(currency, getValue(currency, sign).add(value));
     }
   }
 
