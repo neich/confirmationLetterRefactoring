@@ -2,6 +2,7 @@ package com.example.confirmationletter;
 
 import com.example.confirmationletter.domain.Client;
 import com.example.confirmationletter.domain.Currency;
+import com.example.confirmationletter.domain.GenericRecord;
 import com.example.confirmationletter.domain.Record;
 import com.example.confirmationletter.record.domain.FaultRecord;
 import com.example.confirmationletter.record.domain.TempRecord;
@@ -26,6 +27,25 @@ public class ConfirmationLetterTotalsCalculator {
 
   Client client;
 
+  class RecordFilterStrategy {
+    boolean filter(GenericRecord record) {
+      return true;
+    }
+  }
+
+  RecordFilterStrategy sansAmountsFilter = new RecordFilterStrategy();
+  RecordFilterStrategy faultyAmountsFilter = new RecordFilterStrategy();
+  RecordFilterStrategy recordAmountsFilter = new RecordFilterStrategy() {
+    boolean filter(GenericRecord record) {
+      return record.isCounterTransferRecord() && !record.hasFee();
+    }
+  };
+  RecordFilterStrategy balancedFilter = new RecordFilterStrategy() {
+    boolean filter(GenericRecord record) {
+      return !record.hasFee() && record.isDebitRecord();
+    }
+  };
+
   public ConfirmationLetterTotalsCalculator(Client client) {
     this.client = client;
   }
@@ -41,9 +61,9 @@ public class ConfirmationLetterTotalsCalculator {
       calculateTotalsForBalancedRecords(records);
     } else {
 
-      calculateTotalsForCounterBalancedRecords(records);
-      calculateTotalOverTempRecords(sansDuplicateFaultRecordsList, sansAmounts);
-      calculateTotalOverTempRecords(faultyAccountNumberRecordList, faultyAccountRecordAmounts);
+      calculateTotalOverRecords(records, recordAmounts, recordAmountsFilter);
+      calculateTotalOverRecords(sansDuplicateFaultRecordsList, sansAmounts, sansAmountsFilter);
+      calculateTotalOverRecords(faultyAccountNumberRecordList, faultyAccountRecordAmounts, faultyAmountsFilter);
       calculateOverallTotalsForAllCurrencies();
     }
   }
@@ -56,22 +76,12 @@ public class ConfirmationLetterTotalsCalculator {
     }
   }
 
-  private void calculateTotalsForCounterBalancedRecords(List<Record> records) {
-    for (Record record : records) {
-      if (!record.isCounterTransferRecord() && !record.hasFee()) {
-        addAmountToSignedTotal(record, recordAmounts);
+  private void calculateTotalOverRecords(List<? extends GenericRecord> records, CreditDebitHolder amountsHolder, RecordFilterStrategy filter) {
+
+    for (GenericRecord record : records) {
+      if (filter.filter(record)) {
+        addAmountToSignedTotal(record, amountsHolder);
       }
-
-    }
-  }
-
-  private void calculateTotalOverTempRecords(List<TempRecord> faultyAccountNumberRecordList, CreditDebitHolder amountsHolder) {
-
-    for (TempRecord faultyAccountNumberRecord : faultyAccountNumberRecordList) {
-      setTempRecordSignToClientSignIfUnset(faultyAccountNumberRecord);
-      setTempRecordCurrencyCodeToClientIfUnset(faultyAccountNumberRecord);
-
-      addAmountToSignedTotal(faultyAccountNumberRecord, amountsHolder);
     }
   }
 
@@ -126,12 +136,8 @@ public class ConfirmationLetterTotalsCalculator {
     }
   }
 
-  private void addAmountToSignedTotal(Record record, CreditDebitHolder amounts) {
-    amounts.addValue(record.getCurrency().getCurrencyType(), record.getSign(), record.getAmount());
-  }
-
-  private void addAmountToSignedTotal(TempRecord record, CreditDebitHolder amounts) {
-    amounts.addValue(getCurrencyByCode(record.getCurrencyCode()), record.getSign(), record.getAmount());
+  private void addAmountToSignedTotal(GenericRecord record, CreditDebitHolder amounts) {
+    amounts.addValue(getCurrencyByCode(record.getCurrencyNumericCode()), record.getSign(), record.getAmountAsBigDecimal());
   }
 
   public BigDecimal getRecordAmount(String currency) {
